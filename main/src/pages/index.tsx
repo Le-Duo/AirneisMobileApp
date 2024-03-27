@@ -9,16 +9,17 @@ import HomeCarousel from '../components/HomeCarousel';
 export default function HomePage() {
   const { data: categories, isLoading: isLoadingCategories, error: categoriesError } = useGetCategoriesQuery();
   const { data: featuredProducts, isLoading: isLoadingFeaturedProducts, error: featuredProductsError } = useGetFeaturedProductsQuery();
+  const navigation = useNavigation();
 
   if (isLoadingCategories || isLoadingFeaturedProducts) {
-    return <ActivityIndicator />; // Or any custom loading component
+    return <ActivityIndicator />; 
   }
 
   if (categoriesError || featuredProductsError) {
-    return <Text>Error loading data</Text>; // Or any custom error component
+    return <Text>Error loading data</Text>; 
   }
 
-  // Render UI elements based on fetched data
+  
   return (
     <ScrollView>
       <View>

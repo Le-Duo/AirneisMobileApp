@@ -13,7 +13,6 @@ const queryClient = new QueryClient();
 
 function App() {
   const scrollViewRef = React.useRef(null);
-  // useScrollToTop(scrollViewRef);
 
   const {
     state: { mode, cart, userInfo },
@@ -46,7 +45,6 @@ function App() {
       <NavigationContainer>
         <Stack.Navigator initialRouteName="Home">
           <Stack.Screen name="Home" component={HomePage} options={{ title: 'AIRNEIS' }} />
-          {/* Define other screens and navigation structure here */}
         </Stack.Navigator>
       </NavigationContainer>
     </QueryClientProvider>
