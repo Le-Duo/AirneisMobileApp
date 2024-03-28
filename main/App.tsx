@@ -1,71 +1,39 @@
-import React, { useContext, useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Store } from './src/Store';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import useScrollToTop from './src/hooks/useScrollToTop';
+import React from 'react';
+import {NavigationContainer} from '@react-navigation/native';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import HomePage from './src/pages/index';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
-const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
 const queryClient = new QueryClient();
 
 function App() {
-  const scrollViewRef = React.useRef(null);
-
-  const {
-    state: { mode, cart, userInfo },
-    dispatch,
-  } = useContext(Store)
-
-  useEffect(() => {
-    AsyncStorage.setItem('data-bs-theme', mode)
-  }, [mode])
-
-  const switchModeHandler = () => {
-    dispatch({ type: 'SWITCH_MODE' })
-  }
-
-  const signoutHandler = async () => {
-    dispatch({ type: 'USER_SIGNOUT' })
-    await AsyncStorage.removeItem('userInfo')
-    await AsyncStorage.removeItem('cartItems')
-    await AsyncStorage.removeItem('shippingAddress')
-    await AsyncStorage.removeItem('paymentMethod')
-    // navigation.navigate('Home') // This line is commented out as navigation will be handled differently in the new setup
-  }
-
-  const [showOffcanvas, setShowOffcanvas] = useState(false)
-
-  const handleCloseOffcanvas = () => setShowOffcanvas(false)
-
   return (
     <QueryClientProvider client={queryClient}>
       <NavigationContainer>
-        <Stack.Navigator initialRouteName="Home">
-          <Stack.Screen name="Home" component={HomePage} options={{ title: 'AIRNEIS' }} />
-        </Stack.Navigator>
+        <Tab.Navigator
+          screenOptions={({route}) => ({
+            tabBarIcon: ({focused, color, size}) => {
+              let iconName;
+
+              if (route.name === 'Home') {
+                iconName = focused ? 'home' : 'home';
+              } else {
+                iconName = 'exclamation-circle';
+              }
+              return <FontAwesome name={iconName} size={size} color={color} />;
+            },
+            tabBarActiveTintColor: '#005eb8',
+            tabBarInactiveTintColor: 'gray',
+          })}
+        >
+          <Tab.Screen name="Home" component={HomePage} />
+        </Tab.Navigator>
       </NavigationContainer>
     </QueryClientProvider>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'flex-start',
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    padding: 10,
-  },
-  body: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});
-
 export default App;
+

@@ -3,7 +3,7 @@ import { View, Text, Image, TouchableOpacity, StyleSheet, Alert } from 'react-na
 import { Store } from "../Store";
 import { CartItem } from "../types/Cart";
 import { Product } from "../types/Product";
-//import { ConvertProductToCartItem } from "../utils";
+import { ConvertProductToCartItem } from "../utils";
 
 function ProductItem({ product, stockQuantity }: { product: Product; stockQuantity?: number }) {
   const { state, dispatch } = useContext(Store);
@@ -21,7 +21,7 @@ function ProductItem({ product, stockQuantity }: { product: Product; stockQuanti
       return;
     }
     dispatch({ type: "CART_ADD_ITEM", payload: { ...item, quantity } });
-    // toast.success("Product added to cart"); // Replace with a suitable notification for React Native
+    Alert.alert("Success", "Product added to cart");
   };
 
   return (
@@ -47,8 +47,7 @@ function ProductItem({ product, stockQuantity }: { product: Product; stockQuanti
         ) : (
           <TouchableOpacity
             style={styles.button}
-            onPress={() => {}}
-            // onPress={() => addToCartHandler(ConvertProductToCartItem(product))}
+            onPress={() => addToCartHandler(ConvertProductToCartItem(product))}
           >
             <Text style={styles.buttonText}>Add to Cart</Text>
           </TouchableOpacity>
@@ -61,7 +60,7 @@ function ProductItem({ product, stockQuantity }: { product: Product; stockQuanti
 const styles = StyleSheet.create({
   card: {
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#005eb8",
     borderRadius: 5,
     overflow: "hidden",
     margin: 10,

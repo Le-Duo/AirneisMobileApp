@@ -11,12 +11,17 @@ const HomeCarousel = () => {
   const { data: items, isLoading, error } = useGetCarouselItemsQuery();
   const [activeSlide, setActiveSlide] = useState(0);
 
-  const renderItem = ({ item }: { item: { src: string; caption: string } }) => (
-    <View style={styles.carouselItem}>
-      <Image source={{ uri: "https://airneisstaticassets.onrender.com" + item.src }} style={styles.image} />
-      <Text style={styles.captionText}>{item.caption}</Text>
-    </View>
-  );
+  const renderItem = ({ item }: { item: any }) => {
+    const { src, caption } = item as { src: string; caption: string };
+    return (
+      <View style={styles.carouselItem}>
+        <Image source={{ uri: "https://airneisstaticassets.onrender.com" + src }} style={styles.image} />
+        <View style={styles.captionContainer}>
+          <Text style={styles.captionText}>{caption}</Text>
+        </View>
+      </View>
+    );
+  };
 
   if (isLoading) return <ActivityIndicator />;
   if (error) return <Text>Error: {error.message}</Text>;
@@ -36,6 +41,7 @@ const HomeCarousel = () => {
         onSnapToItem={(index) => setActiveSlide(index)}
         autoplay={true}
         autoplayInterval={5000}
+        vertical={false}
       />
       <Pagination
         dotsLength={items.length}
@@ -56,16 +62,23 @@ const styles = StyleSheet.create({
     height: 200,
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative', 
   },
   image: {
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
   },
+  captionContainer: {
+    position: 'absolute', 
+    bottom: 0, 
+    left: 0,
+    width: '100%', 
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+    padding: 10, 
+  },
   captionText: {
-    position: 'absolute',
-    bottom: 10,
-    left: 10,
+    fontSize: 16,
     color: 'white',
     textAlign: 'center',
     textShadowColor: 'black',
