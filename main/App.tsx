@@ -1,35 +1,23 @@
 import React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
-import HomePage from './src/pages/index';
+import {createStackNavigator} from '@react-navigation/stack';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import HomePage from './src/pages/index';
+import ProductsPage from './src/pages/ProductsPage';
+import ProductPage from './src/pages/ProductPage';
 
-const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator();
 const queryClient = new QueryClient();
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <NavigationContainer>
-        <Tab.Navigator
-          screenOptions={({route}) => ({
-            tabBarIcon: ({focused, color, size}) => {
-              let iconName;
-
-              if (route.name === 'Home') {
-                iconName = focused ? 'home' : 'home';
-              } else {
-                iconName = 'exclamation-circle';
-              }
-              return <FontAwesome name={iconName} size={size} color={color} />;
-            },
-            tabBarActiveTintColor: '#005eb8',
-            tabBarInactiveTintColor: 'gray',
-          })}
-        >
-          <Tab.Screen name="Home" component={HomePage} />
-        </Tab.Navigator>
+        <Stack.Navigator>
+          <Stack.Screen name="Home" component={HomePage} />
+          <Stack.Screen name="Products" component={ProductsPage} />
+          <Stack.Screen name="Product" component={ProductPage} />
+        </Stack.Navigator>
       </NavigationContainer>
     </QueryClientProvider>
   );

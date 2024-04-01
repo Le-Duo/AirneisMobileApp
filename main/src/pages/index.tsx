@@ -121,6 +121,7 @@ export default function HomePage() {
             return (
               <TouchableOpacity
                 key={featuredProduct._id}
+                onPress={() => navigation.navigate('Product', {slug: featuredProduct.product.slug})}
                 style={{marginBottom: 10}}>
                 <ProductItem
                   product={featuredProduct.product}

@@ -28,7 +28,7 @@ function ProductItem({ product, stockQuantity }: { product: Product; stockQuanti
     <View style={styles.card}>
       <TouchableOpacity onPress={() => {}}>
         <Image
-          source={{ uri: "https://airneisstaticassets.onrender.com" + product.URLimage || "/assets/images/no-image.png" }}
+          source={{ uri: "https://airneisstaticassets.onrender.com" + product.URLimages[0] || "/assets/images/no-image.png" }}
           style={{
             ...styles.productImage,
             opacity: actualStock === 0 ? 0.5 : 1,

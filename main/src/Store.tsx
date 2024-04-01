@@ -17,7 +17,7 @@ const defaultDispatch: React.Dispatch<Action> = () => loadInitialState();
 
 const defaultContextValue = {
   state: {
-    mode: 'light', // or your default mode
+    mode: 'light',
     cart: {
       cartItems: [],
       shippingAddress: {} as ShippingAddress,
