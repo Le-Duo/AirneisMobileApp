@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState, useContext} from 'react';
 import {
   View,
   Text,
@@ -6,13 +6,13 @@ import {
   TouchableOpacity,
   ImageBackground,
   ActivityIndicator,
+  RefreshControl,
   useColorScheme,
-  RefreshControl
 } from 'react-native';
 import {useGetCategoriesQuery} from '../hooks/categoryHook';
 import {useGetFeaturedProductsQuery} from '../hooks/featuredProductHook';
 import { useQueryClient } from '@tanstack/react-query';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, useTheme} from '@react-navigation/native';
 import ProductItem from '../components/ProductItem';
 import HomeCarousel from '../components/HomeCarousel';
 
@@ -36,8 +36,8 @@ export default function HomePage() {
     error: featuredProductsError,
   } = useGetFeaturedProductsQuery();
   const navigation = useNavigation();
-  const colorScheme = useColorScheme();
-  const backgroundColor = colorScheme === 'dark' ? '#333' : '#FFF';
+  const scheme = useColorScheme();
+  const {colors} = useTheme();
 
   if (isLoadingCategories || isLoadingFeaturedProducts) {
     return <ActivityIndicator />;
@@ -48,14 +48,14 @@ export default function HomePage() {
   }
 
   return (
-    <ScrollView 
-      style={{backgroundColor: backgroundColor}}
+    <ScrollView
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
           onRefresh={onRefresh}
         />
       }
+      style={{backgroundColor: colors.background}}
     >
       <View>
         <HomeCarousel />
@@ -65,10 +65,10 @@ export default function HomePage() {
             justifyContent: 'center',
             marginVertical: 10,
           }}>
-          <Text style={{fontSize: 24, fontWeight: 'bold', textAlign: 'center'}}>
+          <Text style={{fontSize: 24, fontWeight: 'bold', textAlign: 'center', color: colors.text}}>
             FROM THE HIGHLANDS OF SCOTLAND
           </Text>
-          <Text style={{fontSize: 24, fontWeight: 'bold', textAlign: 'center'}}>
+          <Text style={{fontSize: 24, fontWeight: 'bold', textAlign: 'center', color: colors.text}}>
             OUR FURNITURE IS IMMORTAL
           </Text>
         </View>
@@ -105,7 +105,7 @@ export default function HomePage() {
           ))}
         </View>
         <View style={{alignItems: 'center', marginVertical: 10}}>
-          <Text style={{fontSize: 24, fontWeight: 'bold'}}>
+          <Text style={{fontSize: 24, fontWeight: 'bold', color: colors.text}}>
             THE HIGHLANDERS OF THE MOMENT
           </Text>
         </View>
@@ -135,3 +135,4 @@ export default function HomePage() {
     </ScrollView>
   );
 }
+

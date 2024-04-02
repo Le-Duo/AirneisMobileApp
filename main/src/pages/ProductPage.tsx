@@ -1,7 +1,7 @@
 import React, {useContext} from 'react';
 import {View, Text, Button, ScrollView, Alert, Dimensions, Image} from 'react-native';
 import {useRoute, useNavigation} from '@react-navigation/native';
-import Carousel from 'react-native-snap-carousel-v4'; // Import Carousel
+import Carousel from 'react-native-snap-carousel-v4';
 import LoadingBox from '../components/LoadingBox';
 import MessageBox from '../components/MessageBox';
 import {useGetProductDetailsBySlugQuery} from '../hooks/productHook';
@@ -97,6 +97,9 @@ export default function ProductPage() {
             {product.materials.map((material, index) => (
               <Text key={index}>{material.trim()}</Text>
             ))}
+          </View>
+          <View style={{marginVertical: 5, alignItems: 'center'}}>
+            <Text style={{fontWeight: 'bold', fontSize: 20}}>SIMILAR PRODUCTS</Text>
           </View>
         </View>
       </ScrollView>
