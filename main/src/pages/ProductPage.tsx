@@ -1,5 +1,5 @@
 import React, {useContext} from 'react';
-import {View, Text, Button, ScrollView, Alert, Dimensions, Image} from 'react-native';
+import {View, Text, Button, ScrollView, Dimensions, Image, ToastAndroid} from 'react-native';
 import {useRoute, useNavigation} from '@react-navigation/native';
 import Carousel from 'react-native-snap-carousel-v4';
 import LoadingBox from '../components/LoadingBox';
@@ -9,11 +9,16 @@ import {ApiError} from '../types/APIError';
 import {getError} from '../utils';
 import {Store} from '../Store';
 import {ConvertProductToCartItem} from '../utils';
+import {Product} from '../types/Product';
 
 export default function ProductPage() {
+
+  interface RouteParams {
+    slug: string;
+  }
+
   const route = useRoute();
-  const navigation = useNavigation();
-  const {slug} = route.params;
+  const {slug} = route.params as RouteParams;
   const {
     data: product,
     isLoading,
@@ -24,22 +29,26 @@ export default function ProductPage() {
   const {cart} = state;
 
   const addToCartHandler = () => {
+    if (!product) {
+      ToastAndroid.show('Product is not available', ToastAndroid.SHORT);
+      return;
+    }
     const existItem = cart.cartItems.find(x => x._id === product._id);
     const quantity = existItem ? existItem.quantity + 1 : 1;
     if (product.stock && product.stock < quantity) {
-      Alert.alert('Sorry. Product is out of stock');
+      ToastAndroid.show('Sorry. Product is out of stock', ToastAndroid.SHORT);
       return;
     }
     dispatch({
       type: 'CART_ADD_ITEM',
-      payload: {...ConvertProductToCartItem(product), quantity},
+      payload: {...ConvertProductToCartItem(product as Product), quantity},
     });
-    Alert.alert('Product added to cart');
-    navigation.navigate('Cart');
+    ToastAndroid.show('Product added to cart', ToastAndroid.SHORT);
+    console.log('Dispatched CART_ADD_ITEM');
   };
 
   // Carousel renderItem method
-  const renderItem = ({item}) => {
+  const renderItem = ({item}: {item: string}) => {
     return (
       <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
         <Image
@@ -50,7 +59,7 @@ export default function ProductPage() {
     );
   };
 
-  // Gestion des différents états de la requête
+  // Managing the different states of the request
   if (isLoading) {
     return <LoadingBox />;
   } else if (error) {
@@ -70,6 +79,7 @@ export default function ProductPage() {
             renderItem={renderItem}
             sliderWidth={Dimensions.get('window').width}
             itemWidth={300}
+            vertical={false}
           />
           <View
             style={{
@@ -82,9 +92,9 @@ export default function ProductPage() {
             </Text>
             <Text style={{fontSize: 24, fontWeight: 'bold'}}>{`£${product.price}`}</Text>
           </View>
-          <Text>{product.stock > 0 ? 'En stock' : 'Stock épuisé'}</Text>
+          <Text>{product.stock > 0 ? 'In Stock' : 'Out of Stock'}</Text>
           <Button
-            title={product.stock > 0 ? 'AJOUTER AU PANIER' : 'STOCK ÉPUISÉ'}
+            title={product.stock > 0 ? 'ADD TO CART' : 'OUT OF STOCK'}
             onPress={addToCartHandler}
             disabled={product.stock === 0}
           />
@@ -106,3 +116,4 @@ export default function ProductPage() {
     );
   }
 }
+

@@ -43,6 +43,8 @@ async function loadInitialState(): Promise<AppState> {
   const paymentMethod = await AsyncStorage.getItem('paymentMethod');
   const existingAddresses = await AsyncStorage.getItem('existingAddresses');
 
+  console.log('Loaded cart items:', cartItems ? JSON.parse(cartItems) : []);
+
   return {
     userInfo: userInfo ? JSON.parse(userInfo) : null,
     mode: mode ?? 'light',
@@ -57,6 +59,15 @@ async function loadInitialState(): Promise<AppState> {
     },
     existingAddresses: existingAddresses ? JSON.parse(existingAddresses) : [],
   };
+}
+
+async function saveCartItems(cartItems: CartItem[]) {
+  try {
+    await AsyncStorage.setItem('cartItems', JSON.stringify(cartItems));
+    console.log('Cart items saved:', cartItems);
+  } catch (error) {
+    console.error('Failed to save cart items:', error);
+  }
 }
 
 type Action =
@@ -85,12 +96,18 @@ function reducer(state: AppState, action: Action): AppState {
           )
         : [...state.cart.cartItems, newItem];
 
+      console.log('Adding item to cart:', newItem); // Log the addition of a new item
+      saveCartItems(cartItems);
+
       return {...state, cart: {...state.cart, cartItems}};
     }
     case 'CART_REMOVE_ITEM': {
       const cartItems = state.cart.cartItems.filter(
         (item: CartItem) => item._id !== action.payload._id,
       );
+      
+      saveCartItems(cartItems);
+
       return {...state, cart: {...state.cart, cartItems}};
     }
     case 'CART_CLEAR':
@@ -133,19 +150,30 @@ function reducer(state: AppState, action: Action): AppState {
 
 function StoreProvider(props: React.PropsWithChildren<{}>) {
   const [initialState, setInitialState] = useState<AppState | null>(null);
+  const [loading, setLoading] = useState(true); // Add a loading state
 
   useEffect(() => {
-    loadInitialState().then(setInitialState);
+    async function init() {
+      const loadedState = await loadInitialState();
+      setInitialState(loadedState);
+      setLoading(false); // Update loading state after loading
+    }
+    init();
   }, []);
-
-  if (!initialState) {
-    return null;
-  }
 
   const [state, dispatch] = React.useReducer<React.Reducer<AppState, Action>>(
     reducer,
-    initialState,
+    initialState ?? defaultContextValue.state, // Use loaded initial state or default
   );
+
+  // Effect to save cart items whenever they change
+  useEffect(() => {
+    saveCartItems(state.cart.cartItems).catch(console.error);
+  }, [state.cart.cartItems]);
+
+  if (loading) {
+    return null; // Or any other loading indicator
+  }
 
   return <Store.Provider value={{state, dispatch}} {...props} />;
 }

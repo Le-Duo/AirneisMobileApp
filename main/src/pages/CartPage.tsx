@@ -1,13 +1,19 @@
 import React, { useContext } from 'react';
-import { View, Text, Button, ScrollView, Alert, Image, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { View, Text, Button, ScrollView, ToastAndroid, Image, TouchableOpacity } from 'react-native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { Store } from '../Store';
 import { CartItem } from '../types/Cart';
 import MessageBox from '../components/MessageBox';
 import { styles } from '../styles';
 
+type RootStackParamList = {
+  Product: { slug: string };
+  HomePage: undefined;
+  SignIn: { redirect: string };
+};
+
 export default function CartPage() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const {
     state: {
@@ -19,7 +25,7 @@ export default function CartPage() {
 
   const updateCartHandler = (item: CartItem, quantity: number) => {
     if (item.stock < quantity) {
-      Alert.alert('Sorry. Product is out of stock');
+      ToastAndroid.show('Sorry. Product is out of stock', ToastAndroid.SHORT);
       return;
     }
     dispatch({ type: 'CART_ADD_ITEM', payload: { ...item, quantity } });
@@ -31,14 +37,17 @@ export default function CartPage() {
 
   const removeItemHandler = (item: CartItem) => {
     dispatch({ type: 'CART_REMOVE_ITEM', payload: item });
+    ToastAndroid.show('Item removed from cart', ToastAndroid.SHORT);
   };
+
+  console.log('Cart items in CartPage:', cartItems);
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.header}>Shopping Cart</Text>
+      <Text style={{fontSize: 20, fontWeight: "bold"}}>Shopping Cart</Text>
       {cartItems.length === 0 ? (
         <MessageBox>
-          Cart is empty. <Text onPress={() => navigation.navigate('Home')}>Go Shopping</Text>
+          Cart is empty. <Text onPress={() => navigation.navigate('HomePage')}>Go Shopping</Text>
         </MessageBox>
       ) : (
         cartItems.map((item: CartItem) => (

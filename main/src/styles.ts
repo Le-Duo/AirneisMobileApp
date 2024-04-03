@@ -3,10 +3,6 @@ export const styles = {
         flex: 1,
         padding: 10,
     },
-    header: {
-        fontSize: 20,
-        fontWeight: 'bold',
-    },
     cartItem: {
         flex: 1,
         padding: 10,
@@ -24,4 +20,3 @@ export const styles = {
         padding: 10,
     },
 }
-

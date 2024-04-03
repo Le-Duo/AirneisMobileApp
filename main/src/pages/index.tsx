@@ -12,9 +12,15 @@ import {
 import {useGetCategoriesQuery} from '../hooks/categoryHook';
 import {useGetFeaturedProductsQuery} from '../hooks/featuredProductHook';
 import { useQueryClient } from '@tanstack/react-query';
-import {useNavigation, useTheme} from '@react-navigation/native';
+import {useNavigation, useTheme, NavigationProp} from '@react-navigation/native';
 import ProductItem from '../components/ProductItem';
 import HomeCarousel from '../components/HomeCarousel';
+import { FeaturedProduct } from '../types/FeaturedProduct';
+
+type RootStackParamList = {
+  Product: { slug: string };
+  Products: { category: string };
+};
 
 export default function HomePage() {
   const [ refreshing, setRefreshing ] = useState(false);
@@ -35,7 +41,7 @@ export default function HomePage() {
     isLoading: isLoadingFeaturedProducts,
     error: featuredProductsError,
   } = useGetFeaturedProductsQuery();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const scheme = useColorScheme();
   const {colors} = useTheme();
 
@@ -119,15 +125,12 @@ export default function HomePage() {
               return null;
             }
             return (
-              <TouchableOpacity
+              <ProductItem
                 key={featuredProduct._id}
+                product={featuredProduct.product}
+                stockQuantity={featuredProduct.quantity}
                 onPress={() => navigation.navigate('Product', {slug: featuredProduct.product.slug})}
-                style={{marginBottom: 10}}>
-                <ProductItem
-                  product={featuredProduct.product}
-                  stockQuantity={featuredProduct.quantity}
-                />
-              </TouchableOpacity>
+              />
             );
           })}
         </View>

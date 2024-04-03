@@ -5,6 +5,7 @@ import {createStackNavigator} from '@react-navigation/stack';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import HomePage from './src/pages/index';
 import ProductPage from './src/pages/ProductPage';
+import ProductsPage from './src/pages/ProductsPage';
 import CartPage from './src/pages/CartPage';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {useColorScheme} from 'react-native';
@@ -18,6 +19,7 @@ function HomeStackNavigator() {
     <HomeStack.Navigator screenOptions={{headerShown: false}}>
       <HomeStack.Screen name="HomePage" component={HomePage} />
       <HomeStack.Screen name="Product" component={ProductPage} />
+      <HomeStack.Screen name="Products" component={ProductsPage} />
     </HomeStack.Navigator>
   );
 }
@@ -31,7 +33,7 @@ function App() {
           screenOptions={({route}) => ({
             headerShown: false,
             tabBarIcon: ({focused, color, size}) => {
-              let iconName;
+              let iconName = `question`;
 
               if (route.name === 'Home') {
                 iconName = 'home';
@@ -40,7 +42,7 @@ function App() {
               }
               return <Icon name={iconName} size={size} color={color} />;
             },
-            tabBarActiveTintColor: 'tomato',
+            tabBarActiveTintColor: '#005eb8',
             tabBarInactiveTintColor: 'gray',
             tabBarStyle: {paddingBottom: 5, paddingTop: 5},
           })}>

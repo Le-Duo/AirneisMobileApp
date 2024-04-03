@@ -1,11 +1,11 @@
 import React, { useContext } from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Alert, useColorScheme } from 'react-native';
+import { View, Text, Image, TouchableOpacity, StyleSheet, useColorScheme, ToastAndroid } from 'react-native';
 import { Store } from "../Store";
 import { CartItem } from "../types/Cart";
 import { Product } from "../types/Product";
 import { ConvertProductToCartItem } from "../utils";
 
-function ProductItem({ product, stockQuantity }: { product: Product; stockQuantity?: number }) {
+function ProductItem({ product, stockQuantity, onPress }: { product: Product; stockQuantity?: number; onPress?: () => void}) {
   const { state, dispatch } = useContext(Store);
   const {
     cart: { cartItems },
@@ -19,17 +19,17 @@ function ProductItem({ product, stockQuantity }: { product: Product; stockQuanti
     const existItem = cartItems.find((x) => x._id === item._id);
     const quantity = existItem ? existItem.quantity + 1 : 1;
     if (actualStock && actualStock < quantity) {
-      Alert.alert("Sorry", "Product is out of stock");
+      ToastAndroid.show("Sorry, Product is out of stock", ToastAndroid.SHORT);
       return;
     }
     dispatch({ type: "CART_ADD_ITEM", payload: { ...item, quantity } });
-    Alert.alert("Success", "Product added to cart");
+    ToastAndroid.show("Success, Product added to cart", ToastAndroid.SHORT);
   };
 
   const styles = StyleSheet.create({
     card: {
       borderWidth: 1,
-      borderColor: isDark ? "#ffffff" : "#005eb8",
+      borderColor: "#005eb8",
       borderRadius: 5,
       overflow: "hidden",
       margin: 10,
@@ -45,7 +45,7 @@ function ProductItem({ product, stockQuantity }: { product: Product; stockQuanti
       color: isDark ? "#dddddd" : "#000000",
     },
     buttonText: {
-      color: isDark ? "#ffffff" : "#000000",
+      color: "#fff",
       textAlign: "center",
     },
     productImage: {
@@ -63,24 +63,21 @@ function ProductItem({ product, stockQuantity }: { product: Product; stockQuanti
       marginTop: 10,
     },
     buttonDisabled: {
-      backgroundColor: "#cccccc",
+      backgroundColor: "#aaa",
       padding: 10,
       marginTop: 10,
     },
   });
 
   return (
+    <TouchableOpacity onPress={onPress} style={{ flex: 1 }}>
     <View style={styles.card}>
-      <TouchableOpacity onPress={() => {}}>
         <Image
           source={{ uri: "https://airneisstaticassets.onrender.com" + product.URLimages[0] || "/assets/images/no-image.png" }}
           style={styles.productImage}
         />
-      </TouchableOpacity>
       <View style={styles.cardBody}>
-        <TouchableOpacity onPress={() => {}}>
           <Text style={styles.cardTitle}>{product.name}</Text>
-        </TouchableOpacity>
         <Text style={styles.cardText}>£{product.price}</Text>
         {actualStock === 0 ? (
           <TouchableOpacity style={styles.buttonDisabled} disabled>
@@ -96,7 +93,9 @@ function ProductItem({ product, stockQuantity }: { product: Product; stockQuanti
         )}
       </View>
     </View>
+    </TouchableOpacity>
   );
 }
 
 export default ProductItem;
+
