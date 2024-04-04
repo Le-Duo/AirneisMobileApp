@@ -50,6 +50,8 @@ export default function HomePage() {
   }
 
   if (categoriesError || featuredProductsError) {
+    console.error('Categories Error:', categoriesError);
+    console.error('Featured Products Error:', featuredProductsError);
     return <Text>Error loading data</Text>;
   }
 

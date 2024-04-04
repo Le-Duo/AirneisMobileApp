@@ -96,7 +96,7 @@ function reducer(state: AppState, action: Action): AppState {
           )
         : [...state.cart.cartItems, newItem];
 
-      console.log('Adding item to cart:', newItem); // Log the addition of a new item
+      console.log('Adding item to cart:', newItem);
       saveCartItems(cartItems);
 
       return {...state, cart: {...state.cart, cartItems}};
