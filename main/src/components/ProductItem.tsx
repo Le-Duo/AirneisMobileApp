@@ -4,6 +4,7 @@ import { Store } from "../Store";
 import { CartItem } from "../types/Cart";
 import { Product } from "../types/Product";
 import { ConvertProductToCartItem } from "../utils";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 function ProductItem({ product, stockQuantity, onPress }: { product: Product; stockQuantity?: number; onPress?: () => void}) {
   const { state, dispatch } = useContext(Store);
@@ -22,8 +23,22 @@ function ProductItem({ product, stockQuantity, onPress }: { product: Product; st
       ToastAndroid.show("Sorry, Product is out of stock", ToastAndroid.SHORT);
       return;
     }
+    const updatedCartItems = existItem
+      ? cartItems.map((x) =>
+          x._id === existItem._id ? { ...item, quantity } : x
+        )
+      : [...cartItems, { ...item, quantity }];
+  
     dispatch({ type: "CART_ADD_ITEM", payload: { ...item, quantity } });
     ToastAndroid.show("Success, Product added to cart", ToastAndroid.SHORT);
+  
+    // Save the updated cart items to AsyncStorage
+    try {
+      await AsyncStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
+      console.log('Cart items saved successfully');
+    } catch (error) {
+      console.error('Failed to save cart items:', error);
+    }
   };
 
   const styles = StyleSheet.create({

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Cart, CartItem} from './types/Cart';
 import {UserInfo} from './types/UserInfo';
@@ -10,8 +10,6 @@ type AppState = {
   userInfo: UserInfo | null;
   existingAddresses: ShippingAddress[];
 };
-
-
 
 const defaultDispatch: React.Dispatch<Action> = () => loadInitialState();
 
@@ -33,7 +31,10 @@ const defaultContextValue = {
   dispatch: defaultDispatch,
 };
 
-const Store = React.createContext<{state: AppState; dispatch: React.Dispatch<Action>}>(defaultContextValue);
+const Store = React.createContext<{
+  state: AppState;
+  dispatch: React.Dispatch<Action>;
+}>(defaultContextValue);
 
 async function loadInitialState(): Promise<AppState> {
   const userInfo = await AsyncStorage.getItem('userInfo');
@@ -61,15 +62,6 @@ async function loadInitialState(): Promise<AppState> {
   };
 }
 
-async function saveCartItems(cartItems: CartItem[]) {
-  try {
-    await AsyncStorage.setItem('cartItems', JSON.stringify(cartItems));
-    console.log('Cart items saved:', cartItems);
-  } catch (error) {
-    console.error('Failed to save cart items:', error);
-  }
-}
-
 type Action =
   | {type: 'SWITCH_MODE'}
   | {type: 'CART_ADD_ITEM'; payload: CartItem}
@@ -78,13 +70,15 @@ type Action =
   | {type: 'USER_SIGNIN'; payload: UserInfo}
   | {type: 'USER_SIGNOUT'}
   | {type: 'SAVE_SHIPPING_ADDRESS'; payload: ShippingAddress}
-  | {type: 'SAVE_PAYMENT_METHOD'; payload: string};
+  | {type: 'SAVE_PAYMENT_METHOD'; payload: string}
+  | {type: 'CART_LOAD_ITEMS'; payload: CartItem[]};
 
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
     case 'SWITCH_MODE': {
       return {...state, mode: state.mode === 'light' ? 'dark' : 'light'};
     }
+    // ...
     case 'CART_ADD_ITEM': {
       const newItem = action.payload;
       const existItem = state.cart.cartItems.find(
@@ -97,16 +91,41 @@ function reducer(state: AppState, action: Action): AppState {
         : [...state.cart.cartItems, newItem];
 
       console.log('Adding item to cart:', newItem);
-      saveCartItems(cartItems);
+
+      // Save the updated cart items to AsyncStorage
+      AsyncStorage.setItem('cartItems', JSON.stringify(cartItems))
+        .then(() => {
+          console.log('Cart items saved successfully');
+        })
+        .catch(error => {
+          console.error('Failed to save cart items:', error);
+        });
+
+      console.log('CART_ADD_ITEM action handled. New cartItems:', cartItems);
 
       return {...state, cart: {...state.cart, cartItems}};
     }
+    // ...
     case 'CART_REMOVE_ITEM': {
       const cartItems = state.cart.cartItems.filter(
         (item: CartItem) => item._id !== action.payload._id,
       );
-      
+
+      const saveCartItems = async (cartItems: CartItem[]) => {
+        try {
+          await AsyncStorage.setItem('cartItems', JSON.stringify(cartItems));
+          console.log('Cart items saved:', cartItems);
+        } catch (error) {
+          console.error('Failed to save cart items:', error);
+        }
+      };
+
       saveCartItems(cartItems);
+
+      console.log(
+        'CART_REMOVE_ITEM action handled. Updated cartItems:',
+        cartItems,
+      ); // Detailed logging for CART_REMOVE_ITEM action
 
       return {...state, cart: {...state.cart, cartItems}};
     }
@@ -143,6 +162,15 @@ function reducer(state: AppState, action: Action): AppState {
         ...state,
         cart: {...state.cart, paymentMethod: action.payload},
       };
+    case 'CART_LOAD_ITEMS':
+      console.log(
+        'CART_LOAD_ITEMS action executed, cart items:',
+        action.payload,
+      ); // Added log statement to confirm execution
+      return {
+        ...state,
+        cart: {...state.cart, cartItems: action.payload},
+      };
     default:
       return state;
   }
@@ -166,13 +194,8 @@ function StoreProvider(props: React.PropsWithChildren<{}>) {
     initialState ?? defaultContextValue.state, // Use loaded initial state or default
   );
 
-  // Effect to save cart items whenever they change
-  useEffect(() => {
-    saveCartItems(state.cart.cartItems).catch(console.error);
-  }, [state.cart.cartItems]);
-
   if (loading) {
-    return null; // Or any other loading indicator
+    return null;
   }
 
   return <Store.Provider value={{state, dispatch}} {...props} />;

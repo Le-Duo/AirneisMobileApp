@@ -1,10 +1,11 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { View, Text, Button, ScrollView, ToastAndroid, Image, TouchableOpacity } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { Store } from '../Store';
 import { CartItem } from '../types/Cart';
 import MessageBox from '../components/MessageBox';
 import { styles } from '../styles';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type RootStackParamList = {
   Product: { slug: string };
@@ -14,36 +15,32 @@ type RootStackParamList = {
 
 export default function CartPage() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { state, dispatch } = useContext(Store);
+  const { cartItems } = state.cart;
 
-  const {
-    state: {
-      mode,
-      cart: { cartItems },
-    },
-    dispatch,
-  } = useContext(Store);
+  useEffect(() => {
+    const loadCartItems = async () => {
+      try {
+        const cartItemsString = await AsyncStorage.getItem('cartItems');
+        if (cartItemsString) {
+          const cartItems = JSON.parse(cartItemsString);
+          dispatch({ type: 'CART_LOAD_ITEMS', payload: cartItems });
+        }
+      } catch (error) {
+        console.error('Failed to load cart items:', error);
+      }
+    };
 
-  const updateCartHandler = (item: CartItem, quantity: number) => {
-    if (item.stock < quantity) {
-      ToastAndroid.show('Sorry. Product is out of stock', ToastAndroid.SHORT);
-      return;
-    }
-    dispatch({ type: 'CART_ADD_ITEM', payload: { ...item, quantity } });
-  };
+    loadCartItems();
+  }, [dispatch]);
 
-  const checkoutHandler = () => {
-    navigation.navigate('SignIn', { redirect: 'Shipping' });
-  };
-
-  const removeItemHandler = (item: CartItem) => {
-    dispatch({ type: 'CART_REMOVE_ITEM', payload: item });
-    ToastAndroid.show('Item removed from cart', ToastAndroid.SHORT);
-  };
-
-  console.log('Cart items in CartPage:', cartItems);
+  // Log to check if cartItems are updated
+  useEffect(() => {
+    console.log('Cart items in CartPage updated:', cartItems);
+  }, [cartItems]);
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} key={cartItems.length}>
       <Text style={{fontSize: 20, fontWeight: "bold"}}>Shopping Cart</Text>
       {cartItems.length === 0 ? (
         <MessageBox>
@@ -56,7 +53,7 @@ export default function CartPage() {
             <TouchableOpacity onPress={() => navigation.navigate('Product', { slug: item.slug })}>
               <Text>{item.name}</Text>
             </TouchableOpacity>
-            <View style={styles.cartItemDetail}>
+            {/* <View style={styles.cartItemDetail}>
               <Button
                 onPress={() => updateCartHandler(item, item.quantity - 1)}
                 title="-"
@@ -73,7 +70,7 @@ export default function CartPage() {
                 onPress={() => removeItemHandler(item)}
                 title="Remove"
               />
-            </View>
+            </View> */}
           </View>
         ))
       )}
@@ -83,7 +80,7 @@ export default function CartPage() {
           {cartItems.reduce((a, c) => a + c.quantity * c.price, 0)}
         </Text>
         <Button
-          onPress={checkoutHandler}
+          // onPress={checkoutHandler
           title="Proceed to Checkout"
           disabled={cartItems.length === 0}
         />
