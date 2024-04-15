@@ -51,7 +51,9 @@ async function loadInitialState(): Promise<AppState> {
     mode: mode ?? 'light',
     cart: {
       cartItems: cartItems ? JSON.parse(cartItems) : [],
-      shippingAddress: shippingAddress ? JSON.parse(shippingAddress) : ({} as ShippingAddress),
+      shippingAddress: shippingAddress
+        ? JSON.parse(shippingAddress)
+        : ({} as ShippingAddress),
       paymentMethod: paymentMethod ?? 'Card',
       itemsPrice: 0,
       shippingPrice: 0,
@@ -78,12 +80,13 @@ function reducer(state: AppState, action: Action): AppState {
     case 'SWITCH_MODE': {
       return {...state, mode: state.mode === 'light' ? 'dark' : 'light'};
     }
-    // ...
     case 'CART_ADD_ITEM': {
       const newItem = action.payload;
+      // Je vérifie si l'article existe déjà dans le panier.
       const existItem = state.cart.cartItems.find(
         (item: CartItem) => item._id === newItem._id,
       );
+      // Si l'article existe, je mets à jour sa quantité, sinon je l'ajoute au panier.
       const cartItems = existItem
         ? state.cart.cartItems.map((item: CartItem) =>
             item._id === existItem._id ? newItem : item,
@@ -92,7 +95,7 @@ function reducer(state: AppState, action: Action): AppState {
 
       console.log('Adding item to cart:', newItem);
 
-      // Save the updated cart items to AsyncStorage
+      // Je sauvegarde les articles du panier dans AsyncStorage.
       AsyncStorage.setItem('cartItems', JSON.stringify(cartItems))
         .then(() => {
           console.log('Cart items saved successfully');
@@ -105,14 +108,15 @@ function reducer(state: AppState, action: Action): AppState {
 
       return {...state, cart: {...state.cart, cartItems}};
     }
-    // ...
     case 'CART_REMOVE_ITEM': {
+      // Je filtre les articles du panier pour enlever celui qui est supprimé.
       const cartItems = state.cart.cartItems.filter(
         (item: CartItem) => item._id !== action.payload._id,
       );
 
       const saveCartItems = async (cartItems: CartItem[]) => {
         try {
+          // Je sauvegarde les nouveaux articles du panier dans AsyncStorage.
           await AsyncStorage.setItem('cartItems', JSON.stringify(cartItems));
           console.log('Cart items saved:', cartItems);
         } catch (error) {
@@ -125,7 +129,7 @@ function reducer(state: AppState, action: Action): AppState {
       console.log(
         'CART_REMOVE_ITEM action handled. Updated cartItems:',
         cartItems,
-      ); // Detailed logging for CART_REMOVE_ITEM action
+      );
 
       return {...state, cart: {...state.cart, cartItems}};
     }
@@ -166,7 +170,7 @@ function reducer(state: AppState, action: Action): AppState {
       console.log(
         'CART_LOAD_ITEMS action executed, cart items:',
         action.payload,
-      ); // Added log statement to confirm execution
+      );
       return {
         ...state,
         cart: {...state.cart, cartItems: action.payload},
@@ -178,20 +182,20 @@ function reducer(state: AppState, action: Action): AppState {
 
 function StoreProvider(props: React.PropsWithChildren<{}>) {
   const [initialState, setInitialState] = useState<AppState | null>(null);
-  const [loading, setLoading] = useState(true); // Add a loading state
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function init() {
       const loadedState = await loadInitialState();
       setInitialState(loadedState);
-      setLoading(false); // Update loading state after loading
+      setLoading(false);
     }
     init();
   }, []);
 
   const [state, dispatch] = React.useReducer<React.Reducer<AppState, Action>>(
     reducer,
-    initialState ?? defaultContextValue.state, // Use loaded initial state or default
+    initialState ?? defaultContextValue.state,
   );
 
   if (loading) {
