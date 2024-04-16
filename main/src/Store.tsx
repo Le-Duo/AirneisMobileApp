@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {Cart, CartItem} from './types/Cart';
 import {UserInfo} from './types/UserInfo';
@@ -11,48 +11,21 @@ type AppState = {
   existingAddresses: ShippingAddress[];
 };
 
-const defaultDispatch: React.Dispatch<Action> = () => loadInitialState();
-
-const defaultContextValue = {
-  state: {
-    mode: 'light',
-    cart: {
-      cartItems: [],
-      shippingAddress: {} as ShippingAddress,
-      paymentMethod: 'Card',
-      itemsPrice: 0,
-      shippingPrice: 0,
-      taxPrice: 0,
-      totalPrice: 0,
-    },
-    userInfo: null,
-    existingAddresses: [],
-  },
-  dispatch: defaultDispatch,
-};
-
-const Store = React.createContext<{
-  state: AppState;
-  dispatch: React.Dispatch<Action>;
-}>(defaultContextValue);
-
-async function loadInitialState(): Promise<AppState> {
+const loadInitialState = async (): Promise<AppState> => {
   const userInfo = await AsyncStorage.getItem('userInfo');
-  const mode = await AsyncStorage.getItem('mode');
+  const mode = await AsyncStorage.getItem('mode') ?? 'light';
   const cartItems = await AsyncStorage.getItem('cartItems');
   const shippingAddress = await AsyncStorage.getItem('shippingAddress');
   const paymentMethod = await AsyncStorage.getItem('paymentMethod');
   const existingAddresses = await AsyncStorage.getItem('existingAddresses');
 
-  console.log('Loaded cart items:', cartItems ? JSON.parse(cartItems) : []);
-
   return {
     userInfo: userInfo ? JSON.parse(userInfo) : null,
-    mode: mode ?? 'light',
+    mode: mode,
     cart: {
       cartItems: cartItems ? JSON.parse(cartItems) : [],
       shippingAddress: shippingAddress ? JSON.parse(shippingAddress) : ({} as ShippingAddress),
-      paymentMethod: paymentMethod ?? 'Card',
+      paymentMethod: paymentMethod ? paymentMethod : 'Card',
       itemsPrice: 0,
       shippingPrice: 0,
       taxPrice: 0,
@@ -60,7 +33,26 @@ async function loadInitialState(): Promise<AppState> {
     },
     existingAddresses: existingAddresses ? JSON.parse(existingAddresses) : [],
   };
-}
+};
+
+let initialState: AppState = {
+  mode: 'light',
+  cart: {
+    cartItems: [],
+    shippingAddress: {} as ShippingAddress,
+    paymentMethod: 'Card',
+    itemsPrice: 0,
+    shippingPrice: 0,
+    taxPrice: 0,
+    totalPrice: 0,
+  },
+  userInfo: null,
+  existingAddresses: [],
+};
+
+const initializeState = async () => {
+  initialState = await loadInitialState();
+};
 
 type Action =
   | {type: 'SWITCH_MODE'}
@@ -71,14 +63,15 @@ type Action =
   | {type: 'USER_SIGNOUT'}
   | {type: 'SAVE_SHIPPING_ADDRESS'; payload: ShippingAddress}
   | {type: 'SAVE_PAYMENT_METHOD'; payload: string}
-  | {type: 'CART_LOAD_ITEMS'; payload: CartItem[]};
+  | {type: 'INITIALIZE_STATE'; payload: AppState};
 
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
     case 'SWITCH_MODE': {
-      return {...state, mode: state.mode === 'light' ? 'dark' : 'light'};
+      const newMode = state.mode === 'light' ? 'dark' : 'light';
+      AsyncStorage.setItem('mode', newMode);
+      return {...state, mode: newMode};
     }
-    // ...
     case 'CART_ADD_ITEM': {
       const newItem = action.payload;
       const existItem = state.cart.cartItems.find(
@@ -90,43 +83,14 @@ function reducer(state: AppState, action: Action): AppState {
           )
         : [...state.cart.cartItems, newItem];
 
-      console.log('Adding item to cart:', newItem);
-
-      // Save the updated cart items to AsyncStorage
-      AsyncStorage.setItem('cartItems', JSON.stringify(cartItems))
-        .then(() => {
-          console.log('Cart items saved successfully');
-        })
-        .catch(error => {
-          console.error('Failed to save cart items:', error);
-        });
-
-      console.log('CART_ADD_ITEM action handled. New cartItems:', cartItems);
-
+      AsyncStorage.setItem('cartItems', JSON.stringify(cartItems));
       return {...state, cart: {...state.cart, cartItems}};
     }
-    // ...
     case 'CART_REMOVE_ITEM': {
       const cartItems = state.cart.cartItems.filter(
         (item: CartItem) => item._id !== action.payload._id,
       );
-
-      const saveCartItems = async (cartItems: CartItem[]) => {
-        try {
-          await AsyncStorage.setItem('cartItems', JSON.stringify(cartItems));
-          console.log('Cart items saved:', cartItems);
-        } catch (error) {
-          console.error('Failed to save cart items:', error);
-        }
-      };
-
-      saveCartItems(cartItems);
-
-      console.log(
-        'CART_REMOVE_ITEM action handled. Updated cartItems:',
-        cartItems,
-      ); // Detailed logging for CART_REMOVE_ITEM action
-
+      AsyncStorage.setItem('cartItems', JSON.stringify(cartItems));
       return {...state, cart: {...state.cart, cartItems}};
     }
     case 'CART_CLEAR':
@@ -135,8 +99,10 @@ function reducer(state: AppState, action: Action): AppState {
         cart: {...state.cart, cartItems: []},
       };
     case 'USER_SIGNIN':
+      AsyncStorage.setItem('userInfo', JSON.stringify(action.payload));
       return {...state, userInfo: action.payload};
     case 'USER_SIGNOUT':
+      AsyncStorage.multiRemove(['userInfo', 'cartItems', 'shippingAddress', 'paymentMethod', 'existingAddresses']);
       return {
         mode: 'light',
         cart: {
@@ -153,52 +119,45 @@ function reducer(state: AppState, action: Action): AppState {
       };
     case 'SAVE_SHIPPING_ADDRESS':
       const {payload} = action;
+      AsyncStorage.setItem('shippingAddress', JSON.stringify(payload));
       return {
         ...state,
         cart: {...state.cart, shippingAddress: payload},
       };
     case 'SAVE_PAYMENT_METHOD':
+      AsyncStorage.setItem('paymentMethod', action.payload);
       return {
         ...state,
         cart: {...state.cart, paymentMethod: action.payload},
       };
-    case 'CART_LOAD_ITEMS':
-      console.log(
-        'CART_LOAD_ITEMS action executed, cart items:',
-        action.payload,
-      ); // Added log statement to confirm execution
-      return {
-        ...state,
-        cart: {...state.cart, cartItems: action.payload},
-      };
+    case 'INITIALIZE_STATE':
+      return action.payload;
     default:
       return state;
   }
 }
 
+const defaultDispatch: React.Dispatch<Action> = () => initialState;
+
+const Store = React.createContext({
+  state: initialState,
+  dispatch: defaultDispatch,
+});
+
 function StoreProvider(props: React.PropsWithChildren<{}>) {
-  const [initialState, setInitialState] = useState<AppState | null>(null);
-  const [loading, setLoading] = useState(true); // Add a loading state
-
-  useEffect(() => {
-    async function init() {
-      const loadedState = await loadInitialState();
-      setInitialState(loadedState);
-      setLoading(false); // Update loading state after loading
-    }
-    init();
-  }, []);
-
   const [state, dispatch] = React.useReducer<React.Reducer<AppState, Action>>(
     reducer,
-    initialState ?? defaultContextValue.state, // Use loaded initial state or default
+    initialState,
   );
 
-  if (loading) {
-    return null;
-  }
+  React.useEffect(() => {
+    initializeState().then(() => {
+      dispatch({ type: 'INITIALIZE_STATE', payload: initialState });
+    });
+  }, []);
 
   return <Store.Provider value={{state, dispatch}} {...props} />;
 }
 
 export {Store, StoreProvider};
+
