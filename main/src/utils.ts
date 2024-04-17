@@ -1,6 +1,7 @@
 import { ApiError } from './types/APIError'
 import { CartItem } from './types/Cart'
 import { Product } from './types/Product'
+import { Stock } from './types/Stock'
 
 export const getError = (error: ApiError) => {
   return error.response && error.response.data.message
@@ -9,13 +10,14 @@ export const getError = (error: ApiError) => {
 }
 
 export const ConvertProductToCartItem = (product: Product): CartItem => {
+
   const cartItem: CartItem = {
     _id: product._id || '',
     name: product.name,
     slug: product.slug,
     image: product.URLimages[0],
     price: product.price,
-    stock: product.stock ?? 0,
+    stock: product.stock,
     quantity: 1,
     category: product.category,
   }

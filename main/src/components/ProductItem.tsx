@@ -16,27 +16,22 @@ function ProductItem({ product, stockQuantity, onPress }: { product: Product; st
   const scheme = useColorScheme();
   const isDark = scheme === 'dark';
 
-  // Je vérifie si le produit existe déjà dans le panier.
   const addToCartHandler = async (item: CartItem) => {
     const existItem = cartItems.find((x) => x._id === item._id);
     const quantity = existItem ? existItem.quantity + 1 : 1;
-    // Je vérifie si la quantité demandée ne dépasse pas le stock disponible.
     if (actualStock && actualStock < quantity) {
       ToastAndroid.show("Sorry, Product is out of stock", ToastAndroid.SHORT);
       return;
     }
-    // Je mets à jour les éléments du panier en fonction de l'existence du produit.
     const updatedCartItems = existItem
       ? cartItems.map((x) =>
           x._id === existItem._id ? { ...item, quantity } : x
         )
       : [...cartItems, { ...item, quantity }];
   
-    // J'ajoute le produit au panier.
     dispatch({ type: "CART_ADD_ITEM", payload: { ...item, quantity } });
     ToastAndroid.show("Success, Product added to cart", ToastAndroid.SHORT);
-  
-    // Je sauvegarde les éléments mis à jour du panier dans AsyncStorage.
+   
     try {
       await AsyncStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
       console.log('Cart items saved successfully');
@@ -58,7 +53,7 @@ function ProductItem({ product, stockQuantity, onPress }: { product: Product; st
       fontSize: 18,
       fontWeight: "bold",
       color: isDark ? "#ffffff" : "#000000",
-    },
+    }, 
     cardText: {
       fontSize: 16,
       color: isDark ? "#dddddd" : "#000000",

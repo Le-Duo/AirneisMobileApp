@@ -74,11 +74,9 @@ function reducer(state: AppState, action: Action): AppState {
     }
     case 'CART_ADD_ITEM': {
       const newItem = action.payload;
-      // Je vérifie si l'article existe déjà dans le panier.
       const existItem = state.cart.cartItems.find(
         (item: CartItem) => item._id === newItem._id,
       );
-      // Si l'article existe, je mets à jour sa quantité, sinon je l'ajoute au panier.
       const cartItems = existItem
         ? state.cart.cartItems.map((item: CartItem) =>
             item._id === existItem._id ? newItem : item,
@@ -89,7 +87,6 @@ function reducer(state: AppState, action: Action): AppState {
       return {...state, cart: {...state.cart, cartItems}};
     }
     case 'CART_REMOVE_ITEM': {
-      // Je filtre les articles du panier pour enlever celui qui est supprimé.
       const cartItems = state.cart.cartItems.filter(
         (item: CartItem) => item._id !== action.payload._id,
       );

@@ -47,7 +47,6 @@ export default function ProductPage() {
     console.log('Dispatched CART_ADD_ITEM');
   };
 
-  // Carousel renderItem method
   const renderItem = ({item}: {item: string}) => {
     return (
       <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
@@ -59,7 +58,6 @@ export default function ProductPage() {
     );
   };
 
-  // Managing the different states of the request
   if (isLoading) {
     return <LoadingBox />;
   } else if (error) {

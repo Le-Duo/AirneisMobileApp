@@ -4,6 +4,7 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { Store } from '../Store';
 import { CartItem } from '../types/Cart';
 import MessageBox from '../components/MessageBox';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 type RootStackParamList = {
   HomePage: undefined;
@@ -22,12 +23,15 @@ export default function CartPage() {
     dispatch,
   } = useContext(Store);
 
-  const updateCartHandler = (item: CartItem, quantity: number) => {
-    if (item.stock < quantity) {
+  const updateCartHandler = (cartItem: CartItem, quantity: CartItem['quantity']) => {
+    console.log('Updating cart item:', cartItem);
+    console.log('Current stock quantity:', cartItem.stock, 'Requested quantity:', quantity);
+    if (cartItem.stock < quantity) {
       ToastAndroid.show('Sorry. Product is out of stock', ToastAndroid.SHORT);
       return;
     }
-    dispatch({ type: 'CART_ADD_ITEM', payload: { ...item, quantity } });
+    dispatch({ type: 'CART_ADD_ITEM', payload: { ...cartItem, quantity } });
+    return;
   };
 
   const checkoutHandler = () => {
@@ -53,16 +57,18 @@ export default function CartPage() {
             <View style={styles.listItem}>
               <Image source={{ uri: "https://airneisstaticassets.onrender.com" + item.image }} style={styles.image} />
               <Text onPress={() => navigation.navigate('Product', { slug: item.slug })}>{item.name}</Text>
+              {item.quantity > 1 &&
               <TouchableOpacity onPress={() => updateCartHandler(item, item.quantity - 1)} disabled={item.quantity === 1}>
-                <Text>-</Text>
-              </TouchableOpacity>
+                <Icon name="minus" color="white" />
+              </TouchableOpacity>}
               <Text>{item.quantity}</Text>
+              {item.quantity < item.stock &&
               <TouchableOpacity onPress={() => updateCartHandler(item, item.quantity + 1)} disabled={item.quantity === item.stock}>
-                <Text>+</Text>
-              </TouchableOpacity>
+                <Icon name="plus" color="white" />
+              </TouchableOpacity>}
               <Text>£{item.price}</Text>
               <TouchableOpacity onPress={() => removeItemHandler(item)}>
-                <Text>Delete</Text>
+                <Icon name="trash" size={24} color="red" />
               </TouchableOpacity>
             </View>
           )}
@@ -95,6 +101,5 @@ const styles = StyleSheet.create({
   image: {
     width: 50,
     height: 50,
-    borderRadius: 25,
   },
 });

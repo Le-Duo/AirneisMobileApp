@@ -9,9 +9,7 @@ export const useGetCategoriesQuery = () =>
     queryKey: ['categories'],
     // Utilisation du client API pour obtenir les données
     queryFn: async () => {
-      console.log('Fetching all categories');
       const response = await apiClient.get<Category[]>(`api/categories`);
-      console.log('Categories fetched:', response.data);
       return response.data;
     },
   })

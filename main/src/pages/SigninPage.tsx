@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import {useNavigation, NavigationProp} from '@react-navigation/native';
 import {Store} from '../Store';
-import {userSigninMutation} from '../hooks/userHook';
+import {useUserSigninMutation} from '../hooks/userHook';
 import {ApiError} from '../types/APIError';
 import {getError} from '../utils';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -32,7 +32,7 @@ export default function SigninPage() {
   const {state, dispatch} = useContext(Store);
   const {userInfo} = state;
 
-  const {mutateAsync: signin} = userSigninMutation();
+  const {mutateAsync: signin} = useUserSigninMutation();
 
   const submitHandler = async () => {
     try {
@@ -108,7 +108,7 @@ export default function SigninPage() {
       <TouchableOpacity onPress={() => navigation.navigate('PasswordResetRequest')}>
         <Text style={{ marginTop: 20 }}>Forgot Password?</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
+      <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
         <Text style={{ marginTop: 20 }}>New customer? Create your account</Text>
       </TouchableOpacity>
     </View>

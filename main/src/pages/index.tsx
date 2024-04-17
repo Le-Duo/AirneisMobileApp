@@ -11,19 +11,23 @@ import {
 } from 'react-native';
 import {useGetCategoriesQuery} from '../hooks/categoryHook';
 import {useGetFeaturedProductsQuery} from '../hooks/featuredProductHook';
-import { useQueryClient } from '@tanstack/react-query';
-import {useNavigation, useTheme, NavigationProp} from '@react-navigation/native';
+import {useQueryClient} from '@tanstack/react-query';
+import {
+  useNavigation,
+  useTheme,
+  NavigationProp,
+} from '@react-navigation/native';
 import ProductItem from '../components/ProductItem';
 import HomeCarousel from '../components/HomeCarousel';
-import { FeaturedProduct } from '../types/FeaturedProduct';
+import {FeaturedProduct} from '../types/FeaturedProduct';
 
 type RootStackParamList = {
-  Product: { slug: string };
-  Products: { category: string };
+  Product: {slug: string};
+  Products: {category: string};
 };
 
 export default function HomePage() {
-  const [ refreshing, setRefreshing ] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const queryClient = useQueryClient();
   const onRefresh = React.useCallback(() => {
     setRefreshing(true);
@@ -58,13 +62,9 @@ export default function HomePage() {
   return (
     <ScrollView
       refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-        />
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
-      style={{backgroundColor: colors.background}}
-    >
+      style={{backgroundColor: colors.background}}>
       <View>
         <HomeCarousel />
         <View
@@ -73,10 +73,22 @@ export default function HomePage() {
             justifyContent: 'center',
             marginVertical: 10,
           }}>
-          <Text style={{fontSize: 24, fontWeight: 'bold', textAlign: 'center', color: colors.text}}>
+          <Text
+            style={{
+              fontSize: 24,
+              fontWeight: 'bold',
+              textAlign: 'center',
+              color: colors.text,
+            }}>
             FROM THE HIGHLANDS OF SCOTLAND
           </Text>
-          <Text style={{fontSize: 24, fontWeight: 'bold', textAlign: 'center', color: colors.text}}>
+          <Text
+            style={{
+              fontSize: 24,
+              fontWeight: 'bold',
+              textAlign: 'center',
+              color: colors.text,
+            }}>
             OUR FURNITURE IS IMMORTAL
           </Text>
         </View>
@@ -131,7 +143,11 @@ export default function HomePage() {
                 key={featuredProduct._id}
                 product={featuredProduct.product}
                 stockQuantity={featuredProduct.quantity}
-                onPress={() => navigation.navigate('Product', {slug: featuredProduct.product.slug})}
+                onPress={() =>
+                  navigation.navigate('Product', {
+                    slug: featuredProduct.product.slug,
+                  })
+                }
               />
             );
           })}
@@ -140,4 +156,3 @@ export default function HomePage() {
     </ScrollView>
   );
 }
-

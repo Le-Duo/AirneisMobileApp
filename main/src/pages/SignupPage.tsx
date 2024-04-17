@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useState } from 'react'
 import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native'
 import { useNavigation, NavigationProp } from '@react-navigation/native'
 import { Store } from '../Store'
-import { userSignupMutation } from '../hooks/userHook'
+import { useUserSignupMutation } from '../hooks/userHook'
 import { ApiError } from '../types/APIError'
 import { getError } from '../utils'
 import { toast } from 'react-toastify'
@@ -30,7 +30,7 @@ export default function SignupPage() {
     }
   }, [userInfo, navigation])
 
-  const { mutateAsync: signup } = userSignupMutation()
+  const { mutateAsync: signup } = useUserSignupMutation()
 
   const submitHandler = async () => {
     if (password !== confirmPassword) {

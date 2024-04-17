@@ -1,4 +1,5 @@
 import { Category } from './Category'
+import { Stock } from './Stock'
 
 export type Product = {
   _id?: string
@@ -9,7 +10,7 @@ export type Product = {
   description: string
   materials: string[]
   price: number
-  stock?: number
+  stock: number
   priority?: boolean
   quantity?: number
 }

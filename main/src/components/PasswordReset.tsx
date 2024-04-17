@@ -1,17 +1,30 @@
-import React, { useState, FormEvent } from 'react'
+import React, { useState, useEffect } from 'react'
 import { usePasswordResetMutation } from '../hooks/userHook'
-import { Button, Form, Alert } from 'react-bootstrap'
-import { useParams } from 'react-router-dom'
+import { Button, TextInput, View, Text, StyleSheet, Alert } from 'react-native'
+import { useRoute, RouteProp } from '@react-navigation/native'
+
+interface RouteParams {
+  token: string;
+}
 
 const PasswordReset: React.FC = () => {
-  const { token } = useParams<{ token: string }>()
+  const route = useRoute<RouteProp<Record<string, RouteParams>, string>>()
+  const token = route.params?.token
   const [newPassword, setNewPassword] = useState<string>('')
   const { mutate, status, isError, isSuccess } = usePasswordResetMutation()
 
-  const isLoading = status === 'pending' // Adjusted to check the status correctly
+  const isLoading = status === 'pending'
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  useEffect(() => {
+    if (isError) {
+      Alert.alert("Error", "Failed to reset password. Please try again.")
+    }
+    if (isSuccess) {
+      Alert.alert("Success", "Password reset successful.")
+    }
+  }, [isError, isSuccess])
+
+  const handleSubmit = () => {
     console.log('Token: ', token)
     console.log('New Password: ', newPassword)
     if (token) {
@@ -22,27 +35,36 @@ const PasswordReset: React.FC = () => {
   }
 
   return (
-    <Form onSubmit={handleSubmit}>
-      <Form.Group controlId="newPassword">
-        <Form.Label>New Password</Form.Label>
-        <Form.Control
-          type="password"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-          required
-        />
-      </Form.Group>
-      <Button variant="primary" type="submit" disabled={isLoading}>
-        Reset Password
-      </Button>
-      {isError && (
-        <Alert variant="danger">
-          Failed to reset password. Please try again.
-        </Alert>
-      )}
-      {isSuccess && <Alert variant="success">Password reset successful.</Alert>}
-    </Form>
+    <View style={styles.container}>
+      <Text style={styles.label}>New Password</Text>
+      <TextInput
+        style={styles.input}
+        secureTextEntry
+        value={newPassword}
+        onChangeText={setNewPassword}
+        placeholder="Enter new password"
+      />
+      <Button title="Reset Password" onPress={handleSubmit} disabled={isLoading} />
+    </View>
   )
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 20,
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  input: {
+    height: 40,
+    marginBottom: 20,
+    borderWidth: 1,
+    padding: 10,
+  },
+})
 
 export default PasswordReset
