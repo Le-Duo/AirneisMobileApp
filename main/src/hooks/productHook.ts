@@ -74,11 +74,11 @@ export const useGetProductDetailsBySlugQuery = (slug: string) =>
       const stocks = (await apiClient.get('api/stocks')).data
       const productStock = stocks.find(
         (stock: Stock) => stock.product._id === productDetails._id
-      )
+      )?.quantity
 
       return {
         ...productDetails,
-        stock: productStock, // Now returning the entire Stock object
+        stock: productStock,
       }
     },
   })

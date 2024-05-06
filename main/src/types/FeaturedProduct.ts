@@ -6,4 +6,3 @@ export type FeaturedProduct = {
   quantity?: number;
   product: Product;
 };
-

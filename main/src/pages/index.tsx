@@ -97,7 +97,7 @@ export default function HomePage() {
             <TouchableOpacity
               key={category._id}
               onPress={() =>
-                navigation.navigate('Products', {category: category.name})
+                navigation.navigate('Products', {category: category.slug})
               }
               style={{overflow: 'hidden', margin: 10}}>
               <ImageBackground

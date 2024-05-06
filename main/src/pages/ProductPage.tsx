@@ -73,7 +73,7 @@ export default function ProductPage() {
       <ScrollView>
         <View style={{padding: 10}}>
           <Carousel
-            data={product.URLimages.map(image => 'https://airneisstaticassets.onrender.com' + image)}
+            data={product.URLimages.map(image => 'https://airneisstaticassets.onrender.com' + image.replace("../public", ""))}
             renderItem={renderItem}
             sliderWidth={Dimensions.get('window').width}
             itemWidth={300}
@@ -114,4 +114,3 @@ export default function ProductPage() {
     );
   }
 }
-

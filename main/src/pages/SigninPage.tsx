@@ -24,7 +24,7 @@ type RootStackParamList = {
 
 export default function SigninPage() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(''); 
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -35,16 +35,19 @@ export default function SigninPage() {
   const {mutateAsync: signin} = useUserSigninMutation();
 
   const submitHandler = async () => {
+    if (userInfo) {
+      ToastAndroid.show("Already signed in.", ToastAndroid.SHORT);
+      return; // Early return if user is already signed in
+    }
+  
     try {
       setIsLoading(true);
       const data = await signin({email, password});
       dispatch({type: 'USER_SIGNIN', payload: data});
-
       await AsyncStorage.setItem('userInfo', JSON.stringify(data));
       navigation.navigate('HomePage');
     } catch (err) {
       console.log(err);
-
       ToastAndroid.show(getError(err as ApiError), ToastAndroid.SHORT);
     } finally {
       setIsLoading(false);
@@ -52,10 +55,16 @@ export default function SigninPage() {
   };
 
   useEffect(() => {
-    if (userInfo) {
-      navigation.navigate('HomePage');
-    }
-  }, [navigation, userInfo]);
+    const checkStorage = async () => {
+      const storedUserInfo = await AsyncStorage.getItem('userInfo');
+      console.log('Stored User Info:', storedUserInfo);
+      if (storedUserInfo && !userInfo) {
+        dispatch({ type: 'USER_SIGNIN', payload: JSON.parse(storedUserInfo) });
+      }
+    };
+  
+    checkStorage();
+  }, [userInfo]);
 
   return (
     <View style={{padding: 20}}>

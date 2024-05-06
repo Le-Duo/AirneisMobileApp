@@ -55,7 +55,7 @@ export default function CartPage() {
           keyExtractor={(item) => item._id}
           renderItem={({ item }) => (
             <View style={styles.listItem}>
-              <Image source={{ uri: "https://airneisstaticassets.onrender.com" + item.image }} style={styles.image} />
+              <Image source={{ uri: "https://airneisstaticassets.onrender.com" + item.image?.replace("../public", "") }} style={styles.image} />
               <Text onPress={() => navigation.navigate('Product', { slug: item.slug })}>{item.name}</Text>
               {item.quantity > 1 &&
               <TouchableOpacity onPress={() => updateCartHandler(item, item.quantity - 1)} disabled={item.quantity === 1}>

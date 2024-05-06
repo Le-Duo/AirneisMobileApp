@@ -86,10 +86,10 @@ function ProductItem({ product, stockQuantity, onPress }: { product: Product; st
   return (
     <TouchableOpacity onPress={onPress} style={{ flex: 1 }}>
     <View style={styles.card}>
-        <Image
-          source={{ uri: "https://airneisstaticassets.onrender.com" + product.URLimages[0] || "/assets/images/no-image.png" }}
-          style={styles.productImage}
-        />
+    <Image
+  source={{ uri: "https://airneisstaticassets.onrender.com" + product.URLimages[0].replace("../public", "") || "/assets/images/no-image.png" }}
+  style={styles.productImage}
+/>
       <View style={styles.cardBody}>
           <Text style={styles.cardTitle}>{product.name}</Text>
         <Text style={styles.cardText}>£{product.price}</Text>

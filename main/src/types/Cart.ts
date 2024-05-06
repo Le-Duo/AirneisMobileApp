@@ -1,5 +1,4 @@
 import { Category } from "./Category"
-import { Stock } from "./Stock"
 
 export type CartItem = {
   image: string | undefined
@@ -13,9 +12,11 @@ export type CartItem = {
 }
 
 export type ShippingAddress = {
-  user?: string
   fullName: string
+  phoneNumber: string
   street: string
+  _id?: string
+  user?: string
   city: string
   postalCode: string
   country: string

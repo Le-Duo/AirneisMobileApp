@@ -23,6 +23,7 @@ export const useSearchProducts = ({
   sortBy,
   sortOrder,
 }: SearchParams) => {
+  console.log("SearchParams:", { searchText, minPrice, maxPrice, categories, inStock, materials, sortBy, sortOrder });
   return useQuery<Product[], Error>({
     queryKey: ['searchProducts', { searchText, minPrice, maxPrice, categories, inStock, materials, sortBy, sortOrder }],
     queryFn: () => apiClient.get('/api/products/search', {
@@ -36,6 +37,9 @@ export const useSearchProducts = ({
         sortBy,
         sortOrder,
       },
-    }).then(res => res.data)
+    }).then(res => {
+      console.log("API Response:", res.data.results);
+      return res.data.results;
+    })
   });
 };
