@@ -13,6 +13,7 @@ type AppState = {
 
 const loadInitialState = async (): Promise<AppState> => {
   const userInfo = await AsyncStorage.getItem('userInfo');
+  console.log("Loaded user info from storage:", userInfo);
   const mode = (await AsyncStorage.getItem('mode')) ?? 'light';
   const cartItems = await AsyncStorage.getItem('cartItems');
   const shippingAddress = await AsyncStorage.getItem('shippingAddress');
