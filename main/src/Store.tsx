@@ -13,7 +13,7 @@ type AppState = {
 
 const loadInitialState = async (): Promise<AppState> => {
   const userInfo = await AsyncStorage.getItem('userInfo');
-  console.log("Loaded user info from storage:", userInfo);
+  console.log('Loaded user info from storage:', userInfo);
   const mode = (await AsyncStorage.getItem('mode')) ?? 'light';
   const cartItems = await AsyncStorage.getItem('cartItems');
   const shippingAddress = await AsyncStorage.getItem('shippingAddress');
@@ -55,8 +55,8 @@ let initialState: AppState = {
 
 export const initializeState = async (dispatch: React.Dispatch<Action>) => {
   const loadedState = await loadInitialState();
-  console.log("Loaded initial state:", loadedState);
-  dispatch({ type: 'INITIALIZE_STATE', payload: loadedState });
+  console.log('Loaded initial state:', loadedState);
+  dispatch({type: 'INITIALIZE_STATE', payload: loadedState});
 };
 
 type Action =
@@ -71,7 +71,7 @@ type Action =
   | {type: 'INITIALIZE_STATE'; payload: AppState};
 
 function reducer(state: AppState, action: Action): AppState {
-  console.log("Reducer action:", action.type);
+  console.log('Reducer action:', action.type);
   switch (action.type) {
     case 'SWITCH_MODE': {
       const newMode = state.mode === 'light' ? 'dark' : 'light';
@@ -105,30 +105,23 @@ function reducer(state: AppState, action: Action): AppState {
         cart: {...state.cart, cartItems: []},
       };
     case 'USER_SIGNIN':
-  console.log("Signing in user", action.payload);
-  AsyncStorage.setItem('userInfo', JSON.stringify(action.payload));
-  return {...state, userInfo: action.payload};
-    case 'USER_SIGNOUT':
-      AsyncStorage.multiRemove([
-        'userInfo',
-        'cartItems',
-        'shippingAddress',
-        'paymentMethod',
-        'existingAddresses',
-      ]);
+      console.log('User info received from server:', action.payload);
+      AsyncStorage.setItem('userInfo', JSON.stringify(action.payload));
       return {
-        mode: 'light',
-        cart: {
-          cartItems: [],
-          paymentMethod: 'Card',
-          shippingAddress: {} as ShippingAddress,
-          itemsPrice: 0,
-          shippingPrice: 0,
-          taxPrice: 0,
-          totalPrice: 0,
-        },
-        existingAddresses: [],
+        ...state,
+        userInfo: action.payload,
+      };
+    case 'USER_SIGNOUT':
+      AsyncStorage.multiRemove(['userInfo', 'cartItems', 'shippingAddress', 'paymentMethod']);
+      return {
+        ...state,
         userInfo: null,
+        cart: {
+          ...state.cart,
+          cartItems: [],
+          shippingAddress: {} as ShippingAddress,
+          paymentMethod: 'Card',
+        },
       };
     case 'SAVE_SHIPPING_ADDRESS':
       const {payload} = action;
@@ -144,7 +137,7 @@ function reducer(state: AppState, action: Action): AppState {
         cart: {...state.cart, paymentMethod: action.payload},
       };
     case 'INITIALIZE_STATE':
-      console.log("Initializing state with:", action.payload);
+      console.log('Initializing state with:', action.payload);
       return action.payload;
     default:
       return state;
@@ -166,14 +159,14 @@ function StoreProvider(props: React.PropsWithChildren<{}>) {
 
   React.useEffect(() => {
     initializeState(dispatch).then(() => {
-      console.log("State initialized");
+      console.log('State initialized');
     });
   }, [dispatch]);
 
-  // Ensure a new object is created for context value to trigger rerender
-  const value = React.useMemo(() => ({ state, dispatch }), [state, dispatch]);
+  const value = React.useMemo(() => ({state, dispatch}), [state, dispatch]);
 
   return <Store.Provider value={value} {...props} />;
 }
 
 export {Store, StoreProvider};
+

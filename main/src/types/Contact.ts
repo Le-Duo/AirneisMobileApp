@@ -4,4 +4,4 @@ export type Contact = {
   subject: string;
   message: string;
   user?: string;
-}
+};

@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   NavigationContainer,
   DarkTheme,
@@ -6,9 +6,8 @@ import {
   useNavigation,
   NavigationProp,
 } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from '@react-navigation/stack';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {createStackNavigator} from '@react-navigation/stack';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import HomePage from './src/pages/index';
 import ProductPage from './src/pages/ProductPage';
 import ProductsPage from './src/pages/ProductsPage';
@@ -16,40 +15,43 @@ import CartPage from './src/pages/CartPage';
 import SigninPage from './src/pages/SigninPage';
 import SignupPage from './src/pages/SignupPage';
 import PasswordResetRequest from './src/components/PasswordResetRequest';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import { useColorScheme, Text, ActivityIndicator } from 'react-native';
-import { StoreProvider, Store } from './src/Store';
+import {useColorScheme, ActivityIndicator} from 'react-native';
+import {StoreProvider, Store} from './src/Store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { initializeState } from './src/Store';
 import ProfilePage from './src/pages/ProfilePage';
+import {createDrawerNavigator} from '@react-navigation/drawer';
 
 type RootStackParamList = {
   HomePage: undefined;
-  Product: { slug: string };
-  SignIn: { redirect: string };
+  Product: {slug: string};
+  SignIn: {redirect: string};
 };
 
-const Tab = createBottomTabNavigator();
 const HomeStack = createStackNavigator();
 const queryClient = new QueryClient();
 
-const signoutHandler = async () => {
-  console.log("Signing out, clearing user data");
-  const { dispatch } = useContext(Store);
+export function useSignoutHandler() {
+  const {dispatch} = useContext(Store);
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  dispatch({ type: 'USER_SIGNOUT' });
-  await AsyncStorage.multiRemove([
-    'userInfo',
-    'cartItems',
-    'shippingAddress',
-    'paymentMethod',
-  ]);
-  navigation.navigate('HomePage');
-};
+
+  const signoutHandler = async () => {
+    console.log('Signing out, clearing user data');
+    dispatch({type: 'USER_SIGNOUT'});
+    await AsyncStorage.multiRemove([
+      'userInfo',
+      'cartItems',
+      'shippingAddress',
+      'paymentMethod',
+    ]);
+    navigation.navigate({name: 'SignIn'});
+  };
+
+  return signoutHandler;
+}
 
 function HomeStackNavigator() {
   return (
-    <HomeStack.Navigator screenOptions={{ headerShown: false }}>
+    <HomeStack.Navigator screenOptions={{headerShown: false}}>
       <HomeStack.Screen name="HomePage" component={HomePage} />
       <HomeStack.Screen name="Product" component={ProductPage} />
       <HomeStack.Screen name="Products" component={ProductsPage} />
@@ -64,45 +66,74 @@ function HomeStackNavigator() {
 }
 
 const SignOutComponent = () => {
-  signoutHandler();
+  const signoutHandler = useSignoutHandler();
+  useEffect(() => {
+    signoutHandler();
+  }, [signoutHandler]);
+
   return null;
+};
+
+const SignInComponent = () => {
+  const {state} = useContext(Store);
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+
+  useEffect(() => {
+    if (state.userInfo) {
+      navigation.navigate('HomePage');
+    }
+  }, [state.userInfo, navigation]);
+
+  if (state.userInfo) {
+    return null;
+  }
+
+  return <SigninPage />;
 };
 
 function App() {
   const scheme = useColorScheme();
-  const { state, dispatch } = useContext(Store); // Ensure dispatch is included here
+  const {state} = useContext(Store);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    initializeState(dispatch).then(() => {
+    const bootstrapAsync = async () => {
       setIsLoading(false);
-      console.log('State initialized with user:', state.userInfo);
-    });
-  }, [dispatch]);
+    };
+
+    bootstrapAsync();
+  }, []);
 
   if (isLoading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
 
+  const Drawer = createDrawerNavigator();
+
   return (
     <QueryClientProvider client={queryClient}>
-      <StoreProvider>
-        <NavigationContainer
-          theme={scheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <Tab.Navigator>
-            <Tab.Screen name="Home" component={HomeStackNavigator} />
-            <Tab.Screen name="Cart" component={CartPage} />
+      <NavigationContainer theme={scheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <StoreProvider>
+          <Drawer.Navigator>
             {state.userInfo ? (
-              <Tab.Screen name="Profile" component={ProfilePage} />
+              <>
+                <Drawer.Screen name="Home" component={HomeStackNavigator} />
+                <Drawer.Screen name="Cart" component={CartPage} />
+                <Drawer.Screen name="Profile" component={ProfilePage} />
+                <Drawer.Screen name="SignOut" component={SignOutComponent} />
+              </>
             ) : (
-              <Tab.Screen name="SignIn" component={SigninPage} />
+              <>
+                <Drawer.Screen name="Home" component={HomeStackNavigator} />
+                <Drawer.Screen name="Cart" component={CartPage} />
+                <Drawer.Screen name="SignIn" component={SignInComponent} />
+              </>
             )}
-          </Tab.Navigator>
-        </NavigationContainer>
-      </StoreProvider>
+          </Drawer.Navigator>
+        </StoreProvider>
+      </NavigationContainer>
     </QueryClientProvider>
   );
 }
 
-export default App;
 export default App;

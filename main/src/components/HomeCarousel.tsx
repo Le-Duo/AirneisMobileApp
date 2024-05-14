@@ -1,21 +1,29 @@
-import React, { useContext, useState } from 'react';
-import { View, Text, Image, ActivityIndicator, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
-import Carousel, { Pagination } from 'react-native-snap-carousel-v4';
-import { Store } from '../Store';
-import { useGetCarouselItemsQuery } from '../hooks/carouselHook';
+import {useState} from 'react';
+import {
+  View,
+  Text,
+  Image,
+  ActivityIndicator,
+  StyleSheet,
+  Dimensions,
+} from 'react-native';
+import Carousel, {Pagination} from 'react-native-snap-carousel-v4';
+import {useGetCarouselItemsQuery} from '../hooks/carouselHook';
 
-const { width: screenWidth } = Dimensions.get('window');
+const {width: screenWidth} = Dimensions.get('window');
 
 const HomeCarousel = () => {
-  const { state: { mode } } = useContext(Store);
-  const { data: items, isLoading, error } = useGetCarouselItemsQuery();
+  const {data: items, isLoading, error} = useGetCarouselItemsQuery();
   const [activeSlide, setActiveSlide] = useState(0);
 
-  const renderItem = ({ item }: { item: any }) => {
-    const { src, caption } = item as { src: string; caption: string };
+  const renderItem = ({item}: {item: any}) => {
+    const {src, caption} = item as {src: string; caption: string};
     return (
       <View style={styles.carouselItem}>
-        <Image source={{ uri: "https://airneisstaticassets.onrender.com" + src }} style={styles.image} />
+        <Image
+          source={{uri: 'https://airneisstaticassets.onrender.com' + src}}
+          style={styles.image}
+        />
         <View style={styles.captionContainer}>
           <Text style={styles.captionText}>{caption}</Text>
         </View>
@@ -23,8 +31,12 @@ const HomeCarousel = () => {
     );
   };
 
-  if (isLoading) return <ActivityIndicator />;
-  if (error) return <Text>Error: {error.message}</Text>;
+  if (isLoading) {
+    return <ActivityIndicator />;
+  }
+  if (error) {
+    return <Text>Error: {error.message}</Text>;
+  }
 
   if (!items || items.length === 0) {
     return <Text>No images available</Text>;
@@ -38,7 +50,7 @@ const HomeCarousel = () => {
         sliderWidth={screenWidth}
         itemWidth={screenWidth - 60}
         layout={'default'}
-        onSnapToItem={(index) => setActiveSlide(index)}
+        onSnapToItem={index => setActiveSlide(index)}
         autoplay={true}
         autoplayInterval={5000}
         vertical={false}
@@ -62,7 +74,7 @@ const styles = StyleSheet.create({
     height: 200,
     justifyContent: 'center',
     alignItems: 'center',
-    position: 'relative', 
+    position: 'relative',
   },
   image: {
     width: '100%',
@@ -70,19 +82,19 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   captionContainer: {
-    position: 'absolute', 
-    bottom: 0, 
+    position: 'absolute',
+    bottom: 0,
     left: 0,
-    width: '100%', 
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', 
-    padding: 10, 
+    width: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    padding: 10,
   },
   captionText: {
     fontSize: 16,
     color: 'white',
     textAlign: 'center',
     textShadowColor: 'black',
-    textShadowOffset: { width: 0, height: 0 },
+    textShadowOffset: {width: 0, height: 0},
     textShadowRadius: 10,
   },
   paginationContainer: {
@@ -95,8 +107,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 8,
     backgroundColor: 'rgba(255, 255, 255, 0.92)',
   },
-  inactiveDotStyle: {
-  },
+  inactiveDotStyle: {},
 });
 
 export default HomeCarousel;

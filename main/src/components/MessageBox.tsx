@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from 'react-native';
+import {View, Text, StyleSheet} from 'react-native';
 
 export default function MessageBox({
   variant = 'info',
@@ -12,8 +12,8 @@ export default function MessageBox({
   const textColor = variant === 'info' ? 'white' : 'white';
 
   return (
-    <View style={[styles.container, { backgroundColor }]}>
-      <Text style={[styles.text, { color: textColor }]}>{children}</Text>
+    <View style={[styles.container, {backgroundColor}]}>
+      <Text style={[styles.text, {color: textColor}]}>{children}</Text>
     </View>
   );
 }

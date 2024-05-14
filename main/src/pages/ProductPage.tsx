@@ -1,6 +1,14 @@
 import React, {useContext} from 'react';
-import {View, Text, Button, ScrollView, Dimensions, Image, ToastAndroid} from 'react-native';
-import {useRoute, useNavigation} from '@react-navigation/native';
+import {
+  View,
+  Text,
+  Button,
+  ScrollView,
+  Dimensions,
+  Image,
+  ToastAndroid,
+} from 'react-native';
+import {useRoute} from '@react-navigation/native';
 import Carousel from 'react-native-snap-carousel-v4';
 import LoadingBox from '../components/LoadingBox';
 import MessageBox from '../components/MessageBox';
@@ -12,7 +20,6 @@ import {ConvertProductToCartItem} from '../utils';
 import {Product} from '../types/Product';
 
 export default function ProductPage() {
-
   interface RouteParams {
     slug: string;
   }
@@ -50,10 +57,7 @@ export default function ProductPage() {
   const renderItem = ({item}: {item: string}) => {
     return (
       <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <Image
-          source={{uri: item}}
-          style={{width: '100%', height: 200}}
-        />
+        <Image source={{uri: item}} style={{width: '100%', height: 200}} />
       </View>
     );
   };
@@ -73,7 +77,11 @@ export default function ProductPage() {
       <ScrollView>
         <View style={{padding: 10}}>
           <Carousel
-            data={product.URLimages.map(image => 'https://airneisstaticassets.onrender.com' + image.replace("../public", ""))}
+            data={product.URLimages.map(
+              image =>
+                'https://airneisstaticassets.onrender.com' +
+                image.replace('../public', ''),
+            )}
             renderItem={renderItem}
             sliderWidth={Dimensions.get('window').width}
             itemWidth={300}
@@ -88,7 +96,11 @@ export default function ProductPage() {
             <Text style={{fontSize: 24, fontWeight: 'bold'}}>
               {product.name}
             </Text>
-            <Text style={{fontSize: 24, fontWeight: 'bold'}}>{`£${product.price}`}</Text>
+            <Text
+              style={{
+                fontSize: 24,
+                fontWeight: 'bold',
+              }}>{`£${product.price}`}</Text>
           </View>
           <Text>{product.stock > 0 ? 'In Stock' : 'Out of Stock'}</Text>
           <Button
@@ -107,7 +119,9 @@ export default function ProductPage() {
             ))}
           </View>
           <View style={{marginVertical: 5, alignItems: 'center'}}>
-            <Text style={{fontWeight: 'bold', fontSize: 20}}>SIMILAR PRODUCTS</Text>
+            <Text style={{fontWeight: 'bold', fontSize: 20}}>
+              SIMILAR PRODUCTS
+            </Text>
           </View>
         </View>
       </ScrollView>

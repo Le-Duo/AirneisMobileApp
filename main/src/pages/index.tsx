@@ -1,4 +1,4 @@
-import React, {useState, useContext} from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,7 @@ import {
   ImageBackground,
   ActivityIndicator,
   RefreshControl,
-  useColorScheme,
+  Button,
 } from 'react-native';
 import {useGetCategoriesQuery} from '../hooks/categoryHook';
 import {useGetFeaturedProductsQuery} from '../hooks/featuredProductHook';
@@ -19,12 +19,7 @@ import {
 } from '@react-navigation/native';
 import ProductItem from '../components/ProductItem';
 import HomeCarousel from '../components/HomeCarousel';
-import {FeaturedProduct} from '../types/FeaturedProduct';
-
-type RootStackParamList = {
-  Product: {slug: string};
-  Products: {category: string};
-};
+import {useSignoutHandler} from '../../App';
 
 export default function HomePage() {
   const [refreshing, setRefreshing] = useState(false);
@@ -35,6 +30,11 @@ export default function HomePage() {
       setRefreshing(false);
     });
   }, [queryClient]);
+
+  const signoutHandler = useSignoutHandler();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const {colors} = useTheme();
+
   const {
     data: categories,
     isLoading: isLoadingCategories,
@@ -45,9 +45,6 @@ export default function HomePage() {
     isLoading: isLoadingFeaturedProducts,
     error: featuredProductsError,
   } = useGetFeaturedProductsQuery();
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const scheme = useColorScheme();
-  const {colors} = useTheme();
 
   if (isLoadingCategories || isLoadingFeaturedProducts) {
     return <ActivityIndicator />;
@@ -152,6 +149,7 @@ export default function HomePage() {
             );
           })}
         </View>
+        <Button title="Sign Out" onPress={signoutHandler} color="red" />
       </View>
     </ScrollView>
   );

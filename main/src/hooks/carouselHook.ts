@@ -1,20 +1,18 @@
-import {
-  useMutation,
-  useQuery,
-  UseQueryResult,
-} from '@tanstack/react-query'
+import {useMutation, useQuery, UseQueryResult} from '@tanstack/react-query';
 import apiClient from '../apiClient';
-import { CarouselItem } from '../types/Carousel';
+import {CarouselItem} from '../types/Carousel';
 
-export const useGetCarouselItemsQuery = (): UseQueryResult<CarouselItem[], Error> => {
+export const useGetCarouselItemsQuery = (): UseQueryResult<
+  CarouselItem[],
+  Error
+> => {
   return useQuery({
     queryKey: ['carouselItems'],
     queryFn: async () => {
       try {
         const response = await apiClient.get('api/carousel');
         return response.data;
-      }
-      catch (error) {
+      } catch (error) {
         throw new Error('Failed to fetch carousel items');
       }
     },
@@ -28,8 +26,7 @@ export const useCreateCarouselItemMutation = () => {
       try {
         const response = await apiClient.post('api/carousel', item);
         return response.data;
-      }
-      catch (error) {
+      } catch (error) {
         throw new Error('Failed to create carousel item');
       }
     },
@@ -42,8 +39,7 @@ export const useUpdateCarouselItemMutation = () => {
       try {
         const response = await apiClient.put(`api/carousel/${item._id}`, item);
         return response.data;
-      }
-      catch (error) {
+      } catch (error) {
         throw new Error('Failed to update carousel item');
       }
     },
@@ -56,8 +52,7 @@ export const useDeleteCarouselItemMutation = () => {
       try {
         const response = await apiClient.delete(`api/carousel/${id}`);
         return response.data;
-      }
-      catch (error) {
+      } catch (error) {
         throw new Error('Failed to delete carousel item');
       }
     },
