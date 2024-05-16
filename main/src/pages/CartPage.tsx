@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -9,26 +9,27 @@ import {
   ToastAndroid,
 } from 'react-native';
 import {useNavigation, NavigationProp} from '@react-navigation/native';
-import {Store} from '../Store';
+import {useStore} from 'zustand';
+import store from '../Store';
 import {CartItem} from '../types/Cart';
 import MessageBox from '../components/MessageBox';
 import Icon from 'react-native-vector-icons/FontAwesome';
-
-type RootStackParamList = {
-  HomePage: undefined;
-  Product: {slug: string};
-  SignIn: {redirect: string};
-};
+import { RootStackParamList } from '../../App';
 
 export default function CartPage() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const {
-    state: {
-      cart: {cartItems},
-    },
-    dispatch,
-  } = useContext(Store);
+    cart: {cartItems},
+    cartAddItem,
+    cartRemoveItem,
+    userInfo,
+  } = useStore(store, state => ({
+    cart: state.cart,
+    cartAddItem: state.cartAddItem,
+    cartRemoveItem: state.cartRemoveItem,
+    userInfo: state.userInfo,
+  }));
 
   const updateCartHandler = (
     cartItem: CartItem,
@@ -45,16 +46,19 @@ export default function CartPage() {
       ToastAndroid.show('Sorry. Product is out of stock', ToastAndroid.SHORT);
       return;
     }
-    dispatch({type: 'CART_ADD_ITEM', payload: {...cartItem, quantity}});
-    return;
+    cartAddItem({...cartItem, quantity});
   };
 
   const checkoutHandler = () => {
-    navigation.navigate('SignIn', {redirect: 'Shipping'});
+    if (!userInfo) {
+      navigation.navigate('SignIn', {redirect: 'ShippingAddress'});
+    } else {
+      navigation.navigate('ShippingAddress');
+    }
   };
 
   const removeItemHandler = (item: CartItem) => {
-    dispatch({type: 'CART_REMOVE_ITEM', payload: item});
+    cartRemoveItem(item);
   };
 
   return (
@@ -83,7 +87,7 @@ export default function CartPage() {
               />
               <Text
                 onPress={() =>
-                  navigation.navigate('Product', {slug: item.slug})
+                  navigation.navigate('Product', {productId: item.slug})
                 }>
                 {item.name}
               </Text>

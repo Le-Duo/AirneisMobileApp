@@ -7,7 +7,6 @@ import {
   ImageBackground,
   ActivityIndicator,
   RefreshControl,
-  Button,
 } from 'react-native';
 import {useGetCategoriesQuery} from '../hooks/categoryHook';
 import {useGetFeaturedProductsQuery} from '../hooks/featuredProductHook';
@@ -19,7 +18,7 @@ import {
 } from '@react-navigation/native';
 import ProductItem from '../components/ProductItem';
 import HomeCarousel from '../components/HomeCarousel';
-import {useSignoutHandler} from '../../App';
+import {RootStackParamList} from '../../App';
 
 export default function HomePage() {
   const [refreshing, setRefreshing] = useState(false);
@@ -31,7 +30,6 @@ export default function HomePage() {
     });
   }, [queryClient]);
 
-  const signoutHandler = useSignoutHandler();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const {colors} = useTheme();
 
@@ -149,7 +147,6 @@ export default function HomePage() {
             );
           })}
         </View>
-        <Button title="Sign Out" onPress={signoutHandler} color="red" />
       </View>
     </ScrollView>
   );

@@ -1,44 +1,83 @@
-import React from 'react';
+import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {Cart, CartItem} from './types/Cart';
-import {UserInfo} from './types/UserInfo';
-import {ShippingAddress} from './types/shippingAddress';
+import { CartItem, ShippingAddress} from './types/Cart';
+import { UserInfo } from './types/UserInfo';
 
-type AppState = {
+interface StoreState {
   mode: string;
-  cart: Cart;
-  userInfo: UserInfo | null;
-  existingAddresses: ShippingAddress[];
-};
-
-const loadInitialState = async (): Promise<AppState> => {
-  const userInfo = await AsyncStorage.getItem('userInfo');
-  console.log('Loaded user info from storage:', userInfo);
-  const mode = (await AsyncStorage.getItem('mode')) ?? 'light';
-  const cartItems = await AsyncStorage.getItem('cartItems');
-  const shippingAddress = await AsyncStorage.getItem('shippingAddress');
-  const paymentMethod = await AsyncStorage.getItem('paymentMethod');
-  const existingAddresses = await AsyncStorage.getItem('existingAddresses');
-
-  return {
-    userInfo: userInfo ? JSON.parse(userInfo) : null,
-    mode: mode,
-    cart: {
-      cartItems: cartItems ? JSON.parse(cartItems) : [],
-      shippingAddress: shippingAddress
-        ? JSON.parse(shippingAddress)
-        : ({} as ShippingAddress),
-      paymentMethod: paymentMethod ? paymentMethod : 'Card',
-      itemsPrice: 0,
-      shippingPrice: 0,
-      taxPrice: 0,
-      totalPrice: 0,
-    },
-    existingAddresses: existingAddresses ? JSON.parse(existingAddresses) : [],
+  cart: {
+    cartItems: CartItem[];
+    shippingAddress: ShippingAddress;
+    paymentMethod: string;
+    itemsPrice: number;
+    shippingPrice: number;
+    taxPrice: number;
+    totalPrice: number;
   };
+  userInfo: UserInfo | null;
+  existingAddresses: any[];
+}
+
+interface StoreActions {
+  initializeState: () => Promise<void>;
+  switchMode: () => Promise<void>;
+  cartAddItem: (newItem: CartItem) => Promise<void>;
+  cartRemoveItem: (itemToRemove: CartItem) => void;
+  cartClear: () => void;
+  userSignIn: (userInfo: UserInfo) => void;
+  userSignOut: () => void;
+  saveShippingAddress: (payload: ShippingAddress) => void;
+  savePaymentMethod: (paymentMethod: string) => void;
+}
+
+export type MyState = StoreState & StoreActions;
+
+const loadInitialState = async () => {
+  try {
+    const userInfo = await AsyncStorage.getItem('userInfo');
+    const mode = (await AsyncStorage.getItem('mode')) ?? 'light';
+    const cartItems = await AsyncStorage.getItem('cartItems');
+    const shippingAddress = await AsyncStorage.getItem('shippingAddress');
+    const paymentMethod = await AsyncStorage.getItem('paymentMethod');
+    const existingAddresses = await AsyncStorage.getItem('existingAddresses');
+
+    return {
+      userInfo: userInfo ? JSON.parse(userInfo) : null,
+      mode: mode,
+      cart: {
+        cartItems: cartItems ? JSON.parse(cartItems) : [],
+        shippingAddress: shippingAddress
+          ? JSON.parse(shippingAddress)
+          : ({} as ShippingAddress),
+        paymentMethod: paymentMethod || 'Card',
+        itemsPrice: 0,
+        shippingPrice: 0,
+        taxPrice: 0,
+        totalPrice: 0,
+      },
+      existingAddresses: existingAddresses ? JSON.parse(existingAddresses) : [],
+    };
+  } catch (error) {
+    console.error('Failed to load initial state:', error);
+    return {
+      mode: 'light',
+      cart: {
+        cartItems: [],
+        shippingAddress: {} as ShippingAddress,
+        paymentMethod: 'Card',
+        itemsPrice: 0,
+        shippingPrice: 0,
+        taxPrice: 0,
+        totalPrice: 0,
+      },
+      userInfo: null,
+      existingAddresses: [],
+    };
+  }
 };
 
-let initialState: AppState = {
+// Use StateCreator to define the store
+const store = create<MyState>((set, get) => ({
   mode: 'light',
   cart: {
     cartItems: [],
@@ -51,122 +90,77 @@ let initialState: AppState = {
   },
   userInfo: null,
   existingAddresses: [],
-};
-
-export const initializeState = async (dispatch: React.Dispatch<Action>) => {
-  const loadedState = await loadInitialState();
-  console.log('Loaded initial state:', loadedState);
-  dispatch({type: 'INITIALIZE_STATE', payload: loadedState});
-};
-
-type Action =
-  | {type: 'SWITCH_MODE'}
-  | {type: 'CART_ADD_ITEM'; payload: CartItem}
-  | {type: 'CART_REMOVE_ITEM'; payload: CartItem}
-  | {type: 'CART_CLEAR'}
-  | {type: 'USER_SIGNIN'; payload: UserInfo}
-  | {type: 'USER_SIGNOUT'}
-  | {type: 'SAVE_SHIPPING_ADDRESS'; payload: ShippingAddress}
-  | {type: 'SAVE_PAYMENT_METHOD'; payload: string}
-  | {type: 'INITIALIZE_STATE'; payload: AppState};
-
-function reducer(state: AppState, action: Action): AppState {
-  console.log('Reducer action:', action.type);
-  switch (action.type) {
-    case 'SWITCH_MODE': {
-      const newMode = state.mode === 'light' ? 'dark' : 'light';
-      AsyncStorage.setItem('mode', newMode);
-      return {...state, mode: newMode};
+  initializeState: async () => {
+    const loadedState = await loadInitialState();
+    set(loadedState);
+  },
+  switchMode: async () => {
+    const newMode = get().mode === 'light' ? 'dark' : 'light';
+    try {
+      await AsyncStorage.setItem('mode', newMode);
+      set({mode: newMode});
+    } catch (error) {
+      console.error('Failed to switch mode:', error);
     }
-    case 'CART_ADD_ITEM': {
-      const newItem = action.payload;
-      const existItem = state.cart.cartItems.find(
-        (item: CartItem) => item._id === newItem._id,
-      );
-      const cartItems = existItem
-        ? state.cart.cartItems.map((item: CartItem) =>
-            item._id === existItem._id ? newItem : item,
-          )
-        : [...state.cart.cartItems, newItem];
-
-      AsyncStorage.setItem('cartItems', JSON.stringify(cartItems));
-      return {...state, cart: {...state.cart, cartItems}};
+  },
+  cartAddItem: async (newItem: CartItem) => {
+    const cartItems = get().cart.cartItems;
+    const existItem = cartItems.find(item => item._id === newItem._id);
+    const updatedCartItems = existItem
+      ? cartItems.map(item => (item._id === existItem._id ? newItem : item))
+      : [...cartItems, newItem];
+    try {
+      await AsyncStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
+      set({cart: {...get().cart, cartItems: updatedCartItems}});
+    } catch (error) {
+      console.error('Failed to add item to cart:', error);
     }
-    case 'CART_REMOVE_ITEM': {
-      const cartItems = state.cart.cartItems.filter(
-        (item: CartItem) => item._id !== action.payload._id,
-      );
-      AsyncStorage.setItem('cartItems', JSON.stringify(cartItems));
-      return {...state, cart: {...state.cart, cartItems}};
-    }
-    case 'CART_CLEAR':
-      return {
-        ...state,
-        cart: {...state.cart, cartItems: []},
-      };
-    case 'USER_SIGNIN':
-      console.log('User info received from server:', action.payload);
-      AsyncStorage.setItem('userInfo', JSON.stringify(action.payload));
-      return {
-        ...state,
-        userInfo: action.payload,
-      };
-    case 'USER_SIGNOUT':
-      AsyncStorage.multiRemove(['userInfo', 'cartItems', 'shippingAddress', 'paymentMethod']);
-      return {
-        ...state,
-        userInfo: null,
-        cart: {
-          ...state.cart,
-          cartItems: [],
-          shippingAddress: {} as ShippingAddress,
-          paymentMethod: 'Card',
-        },
-      };
-    case 'SAVE_SHIPPING_ADDRESS':
-      const {payload} = action;
-      AsyncStorage.setItem('shippingAddress', JSON.stringify(payload));
-      return {
-        ...state,
-        cart: {...state.cart, shippingAddress: payload},
-      };
-    case 'SAVE_PAYMENT_METHOD':
-      AsyncStorage.setItem('paymentMethod', action.payload);
-      return {
-        ...state,
-        cart: {...state.cart, paymentMethod: action.payload},
-      };
-    case 'INITIALIZE_STATE':
-      console.log('Initializing state with:', action.payload);
-      return action.payload;
-    default:
-      return state;
-  }
-}
-
-const defaultDispatch: React.Dispatch<Action> = () => initialState;
-
-const Store = React.createContext({
-  state: initialState,
-  dispatch: defaultDispatch,
-});
-
-function StoreProvider(props: React.PropsWithChildren<{}>) {
-  const [state, dispatch] = React.useReducer<React.Reducer<AppState, Action>>(
-    reducer,
-    initialState,
-  );
-
-  React.useEffect(() => {
-    initializeState(dispatch).then(() => {
-      console.log('State initialized');
+  },
+  cartRemoveItem: (itemToRemove: CartItem) => {
+    const cartItems = get().cart.cartItems.filter(
+      (item: CartItem) => item._id !== itemToRemove._id,
+    );
+    AsyncStorage.setItem('cartItems', JSON.stringify(cartItems));
+    set({cart: {...get().cart, cartItems}});
+  },
+  cartClear: () => {
+    set({
+      cart: {
+        ...get().cart,
+        cartItems: [],
+      },
     });
-  }, [dispatch]);
+  },
+  userSignIn: (userInfo: UserInfo) => {
+    console.log('User info received from server:', userInfo);
+    AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
+    set({userInfo});
+  },
+  userSignOut: () => {
+    AsyncStorage.multiRemove([
+      'userInfo',
+      'cartItems',
+      'shippingAddress',
+      'paymentMethod',
+    ]);
+    set({
+      userInfo: null,
+      cart: {
+        ...get().cart,
+        cartItems: [],
+        shippingAddress: {} as ShippingAddress,
+        paymentMethod: 'Card',
+      },
+    });
+  },
+  saveShippingAddress: (payload: ShippingAddress) => {
+    AsyncStorage.setItem('shippingAddress', JSON.stringify(payload));
+    set({cart: {...get().cart, shippingAddress: payload}});
+  },
+  savePaymentMethod: (paymentMethod: string) => {
+    AsyncStorage.setItem('paymentMethod', paymentMethod);
+    set({cart: {...get().cart, paymentMethod}});
+  },
+}));
 
-  const value = React.useMemo(() => ({state, dispatch}), [state, dispatch]);
-
-  return <Store.Provider value={value} {...props} />;
-}
-
-export {Store, StoreProvider};
-
+export default store;

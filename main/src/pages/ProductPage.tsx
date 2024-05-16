@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -15,7 +15,8 @@ import MessageBox from '../components/MessageBox';
 import {useGetProductDetailsBySlugQuery} from '../hooks/productHook';
 import {ApiError} from '../types/APIError';
 import {getError} from '../utils';
-import {Store} from '../Store';
+import {useStore} from 'zustand';
+import store from '../Store';
 import {ConvertProductToCartItem} from '../utils';
 import {Product} from '../types/Product';
 
@@ -32,10 +33,12 @@ export default function ProductPage() {
     error,
   } = useGetProductDetailsBySlugQuery(slug);
 
-  const {state, dispatch} = useContext(Store);
-  const {cart} = state;
+  const {cart, cartAddItem} = useStore(store, state => ({
+    cart: state.cart,
+    cartAddItem: state.cartAddItem,
+  }));
 
-  const addToCartHandler = () => {
+  const addToCartHandler = async () => {
     if (!product) {
       ToastAndroid.show('Product is not available', ToastAndroid.SHORT);
       return;
@@ -46,9 +49,9 @@ export default function ProductPage() {
       ToastAndroid.show('Sorry. Product is out of stock', ToastAndroid.SHORT);
       return;
     }
-    dispatch({
-      type: 'CART_ADD_ITEM',
-      payload: {...ConvertProductToCartItem(product as Product), quantity},
+    await cartAddItem({
+      ...ConvertProductToCartItem(product as Product),
+      quantity,
     });
     ToastAndroid.show('Product added to cart', ToastAndroid.SHORT);
     console.log('Dispatched CART_ADD_ITEM');

@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {
   View,
   Text,
@@ -7,7 +7,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import {useNavigation, NavigationProp} from '@react-navigation/native';
-import {Store} from '../Store';
+import {useStore} from 'zustand';
+import store from '../Store';
 import {useUserSignupMutation} from '../hooks/userHook';
 import {ApiError} from '../types/APIError';
 import {getError} from '../utils';
@@ -27,8 +28,10 @@ export default function SignupPage() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const {state, dispatch} = useContext(Store);
-  const {userInfo} = state;
+  const {userInfo, userSignIn} = useStore(store, state => ({
+    userInfo: state.userInfo,
+    userSignIn: state.userSignIn,
+  }));
 
   useEffect(() => {
     if (userInfo) {
@@ -46,7 +49,7 @@ export default function SignupPage() {
     try {
       setIsLoading(true);
       const data = await signup({name, email, password});
-      dispatch({type: 'USER_SIGNIN', payload: data});
+      userSignIn(data);
       navigation.navigate('HomePage');
     } catch (err) {
       toast.error(getError(err as ApiError));

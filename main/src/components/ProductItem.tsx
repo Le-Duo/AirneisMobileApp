@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -8,11 +8,11 @@ import {
   useColorScheme,
   ToastAndroid,
 } from 'react-native';
-import {Store} from '../Store';
+import {useStore} from 'zustand';
+import store from '../Store';
 import {CartItem} from '../types/Cart';
 import {Product} from '../types/Product';
 import {ConvertProductToCartItem} from '../utils';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 function ProductItem({
   product,
@@ -23,10 +23,11 @@ function ProductItem({
   stockQuantity?: number;
   onPress?: () => void;
 }) {
-  const {state, dispatch} = useContext(Store);
-  const {
-    cart: {cartItems},
-  } = state;
+  const {cart, cartAddItem} = useStore(store, state => ({
+    cart: state.cart,
+    cartAddItem: state.cartAddItem,
+  }));
+  const {cartItems} = cart;
 
   const actualStock =
     stockQuantity !== undefined ? stockQuantity : product.stock;
@@ -40,19 +41,9 @@ function ProductItem({
       ToastAndroid.show('Sorry, Product is out of stock', ToastAndroid.SHORT);
       return;
     }
-    const updatedCartItems = existItem
-      ? cartItems.map(x => (x._id === existItem._id ? {...item, quantity} : x))
-      : [...cartItems, {...item, quantity}];
 
-    dispatch({type: 'CART_ADD_ITEM', payload: {...item, quantity}});
+    await cartAddItem({...item, quantity});
     ToastAndroid.show('Success, Product added to cart', ToastAndroid.SHORT);
-
-    try {
-      await AsyncStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
-      console.log('Cart items saved successfully');
-    } catch (error) {
-      console.error('Failed to save cart items:', error);
-    }
   };
 
   const styles = StyleSheet.create({
