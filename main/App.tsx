@@ -15,13 +15,21 @@ import CartPage from './src/pages/CartPage';
 import SigninPage from './src/pages/SigninPage';
 import SignupPage from './src/pages/SignupPage';
 import PasswordResetRequest from './src/components/PasswordResetRequest';
-import {useColorScheme, ActivityIndicator} from 'react-native';
+import {
+  useColorScheme,
+  ActivityIndicator,
+  TouchableOpacity,
+  Text,
+} from 'react-native';
 import ProfilePage from './src/pages/ProfilePage';
 import ShippingAddressPage from './src/pages/ShippingAddressPage';
 import PaymentMethodPage from './src/pages/PaymentMethodPage';
 import PlaceOrderPage from './src/pages/PlaceOrderPage';
-import {createDrawerNavigator} from '@react-navigation/drawer';
+import OrderPage from './src/pages/OrderPage';
 import store from './src/Store';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { DrawerNavigationProp } from '@react-navigation/drawer';
 
 export type RootStackParamList = {
   HomePage: undefined;
@@ -37,6 +45,7 @@ export type RootStackParamList = {
   ShippingAddress: undefined;
   PaymentMethod: undefined;
   PlaceOrder: undefined;
+  Order: {orderId: string};
 };
 
 const HomeStack = createStackNavigator();
@@ -69,7 +78,12 @@ function HomeStackNavigator() {
       <HomeStack.Screen name="Cart" component={CartPage} />
       <HomeStack.Screen name="Profile" component={ProfilePage} />
       <HomeStack.Screen name="Payment" component={PaymentMethodPage} />
-      <HomeStack.Screen name="ShippingAddress" component={ShippingAddressPage} />
+      <HomeStack.Screen
+        name="ShippingAddress"
+        component={ShippingAddressPage}
+      />
+      <HomeStack.Screen name="PlaceOrder" component={PlaceOrderPage} />
+      <HomeStack.Screen name="Order" component={OrderPage} />
     </HomeStack.Navigator>
   );
 }
@@ -84,26 +98,78 @@ const SignOutComponent = () => {
   return null;
 };
 
-const SignInComponent = () => {
-  const userInfo = store(state => state.userInfo);
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+const MenuComponent = () => {
+  const navigation = useNavigation<DrawerNavigationProp<RootStackParamList>>();
 
-  useEffect(() => {
-    if (userInfo) {
-      navigation.navigate('HomePage');
-    }
-  }, [userInfo, navigation]);
+  const handlePress = () => {
+    navigation.toggleDrawer();
+  };
 
-  if (userInfo) {
-    return null;
-  }
-
-  return <SigninPage />;
+  return (
+    <TouchableOpacity onPress={handlePress}>
+      <Text>Open Drawer</Text>
+    </TouchableOpacity>
+  );
 };
+
+const DrawerContent = () => (
+  <NavigationContainer>
+    <Drawer.Navigator>
+      <Drawer.Screen name="Main" component={HomeStackNavigator} />
+      <Drawer.Screen name="Menu" component={MenuComponent} />
+      <Drawer.Screen name="Sign Out" component={SignOutComponent} />
+    </Drawer.Navigator>
+  </NavigationContainer>
+);
+
+const BottomTabs = () => {
+  const isDrawerOpen = useDrawerStatus() === 'open';
+
+  return (
+    <Tab.Navigator
+      screenOptions={({route}) => ({
+        tabBarIcon: ({focused, color, size}) => {
+          let iconName;
+
+          if (route.name === 'Home') {
+            iconName = focused ? 'home' : 'home-outline';
+          } else if (route.name === 'Search') {
+            iconName = focused ? 'search' : 'search-outline';
+          } else if (route.name === 'Cart') {
+            iconName = focused ? 'cart' : 'cart-outline';
+          } else if (route.name === 'Menu') {
+            iconName = isDrawerOpen ? 'close' : 'menu';
+          } else {
+            iconName = 'home-outline';
+          }
+
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        headerShown: false,
+      })}>
+      <Tab.Screen name="Home" component={DrawerContent} />
+      {/* <Tab.Screen name="Search" component={SearchPage} /> */}
+      <Tab.Screen name="Cart" component={CartPage} />
+      <Tab.Screen
+        name="Menu"
+        component={DrawerContent}
+        listeners={({navigation}) => ({
+          tabPress: e => {
+            e.preventDefault();
+            navigation.dispatch(DrawerActions.toggleDrawer());
+          },
+        })}
+      />
+    </Tab.Navigator>
+  );
+};
+
+import { createDrawerNavigator } from '@react-navigation/drawer';
+
+const Drawer = createDrawerNavigator();
 
 function App() {
   const scheme = useColorScheme();
-  const userInfo = store(state => state.userInfo);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -118,27 +184,12 @@ function App() {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
 
-  const Drawer = createDrawerNavigator();
+  const Tab = createBottomTabNavigator();
 
   return (
     <QueryClientProvider client={queryClient}>
       <NavigationContainer theme={scheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Drawer.Navigator>
-          {userInfo ? (
-            <>
-              <Drawer.Screen name="Home" component={HomeStackNavigator} />
-              <Drawer.Screen name="Cart" component={CartPage} />
-              <Drawer.Screen name="Profile" component={ProfilePage} />
-              <Drawer.Screen name="SignOut" component={SignOutComponent} />
-            </>
-          ) : (
-            <>
-              <Drawer.Screen name="Home" component={HomeStackNavigator} />
-              <Drawer.Screen name="Cart" component={CartPage} />
-              <Drawer.Screen name="SignIn" component={SignInComponent} />
-            </>
-          )}
-        </Drawer.Navigator>
+        <BottomTabs />
       </NavigationContainer>
     </QueryClientProvider>
   );

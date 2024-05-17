@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Text, TextInput, Button, ScrollView, TouchableOpacity, StyleSheet, Switch } from 'react-native';
+import { View, Text, TextInput, Button, ScrollView, TouchableOpacity, StyleSheet, Switch, ActivityIndicator, Alert } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
@@ -8,7 +8,7 @@ import { ShippingAddress } from '../types/Cart';
 import { UserAddress } from '../types/UserInfo';
 import { RootStackParamList } from '../../App';
 import { countries } from '../data/countries';
-import { useAddAddressMutation } from '../hooks/userHook'; 
+import { useAddAddressMutation, useGetUserByIdQuery } from '../hooks/userHook'; 
 
 export default function ShippingAddressPage() {
   const navigation = useNavigation<NavigationProp<RootStackParamList, 'ShippingAddress'>>();
@@ -21,7 +21,7 @@ export default function ShippingAddressPage() {
   const [saveAddress, setSaveAddress] = useState(false); 
 
   const [addresses, setAddresses] = useState<UserAddress[]>([]);
-  const [defaultUserAddress, setDefaultUserAddress] = useState<UserAddress>();
+  const [selectedAddress, setSelectedAddress] = useState<UserAddress | undefined>();
 
   const [fullName, setFullName] = useState(userInfo?.name || '');
   const [phoneNumber, setPhoneNumber] = useState(userInfo?.phoneNumber || '');
@@ -30,6 +30,9 @@ export default function ShippingAddressPage() {
   const [postalCode, setPostalCode] = useState('');
   const [country, setCountry] = useState('');
 
+  const userConnectedID = userInfo ? userInfo._id : null;
+  const { data: user, error, isLoading } = useGetUserByIdQuery(userConnectedID ?? '');
+
   useEffect(() => {
     if (!userInfo) {
       navigation.navigate('SignIn', { redirect: 'Shipping' });
@@ -37,23 +40,21 @@ export default function ShippingAddressPage() {
   }, [userInfo, navigation]);
 
   useEffect(() => {
-    const fetchUserAddresses = async () => {
-      const userAddresses = await AsyncStorage.getItem('userAddresses');
-      if (userAddresses) {
-        setAddresses(JSON.parse(userAddresses));
-      }
-    };
-    fetchUserAddresses();
-  }, []);
+    if (user && user.addresses) {
+      setAddresses(user.addresses);
+    }
+  }, [user]);
 
   useEffect(() => {
-    const defaultAddr = addresses.find((element) => element.isDefault === true);
-    if (defaultAddr) {
-      setDefaultUserAddress(defaultAddr);
-      setStreet(defaultAddr.street);
-      setCity(defaultAddr.city);
-      setPostalCode(defaultAddr.postalCode);
-      setCountry(defaultAddr.country);
+    if (addresses.length > 0) {
+      const defaultAddr = addresses.find((address: UserAddress) => address.isDefault === true);
+      if (defaultAddr) {
+        setSelectedAddress(defaultAddr);
+        setStreet(defaultAddr.street);
+        setCity(defaultAddr.city);
+        setPostalCode(defaultAddr.postalCode);
+        setCountry(defaultAddr.country);
+      }
     }
   }, [addresses]);
 
@@ -82,11 +83,21 @@ export default function ShippingAddressPage() {
   };
 
   const handleAddressClick = (address: UserAddress) => {
+    setSelectedAddress(address);
     setStreet(address.street);
     setCity(address.city);
     setPostalCode(address.postalCode);
     setCountry(address.country);
   };
+
+  if (isLoading) {
+    return <ActivityIndicator size="large" color="#0000ff" />;
+  }
+
+  if (error) {
+    Alert.alert("Error", "Unable to load user data");
+    return;
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -142,6 +153,7 @@ export default function ShippingAddressPage() {
       {addresses.map((address) => (
         <TouchableOpacity key={address._id} onPress={() => handleAddressClick(address)} style={styles.addressContainer}>
           <Text>{address.street}, {address.city}, {address.postalCode}, {address.country}</Text>
+          {address.isDefault && <Text>Default</Text>}
         </TouchableOpacity>
       ))}
     </ScrollView>

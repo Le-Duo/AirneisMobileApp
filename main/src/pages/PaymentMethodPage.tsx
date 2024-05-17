@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { View, Text, Button, ScrollView, StyleSheet, TextInput } from "react-native";
+import { View, Text, Button, ScrollView, StyleSheet, TextInput, TouchableOpacity } from "react-native";
 import { useNavigation, NavigationProp } from "@react-navigation/native";
 import { CreditCard } from "../types/CreditCard";
 import { useGetUserByIdQuery, useAddPaymentCardMutation } from "../hooks/userHook";
@@ -9,7 +9,7 @@ import useStore from "../Store";
 type PaymentMethodState = Pick<CreditCard, 'bankName' | 'number' | 'fullName' | 'monthExpiration' | 'yearExpiration'>;
 
 export default function PaymentMethodPage() {
-  const navigation = useNavigation<NavigationProp<RootStackParamList, "PaymentMethod">>();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const { cart, userInfo, savePaymentMethod } = useStore(state => ({
     cart: state.cart,
     userInfo: state.userInfo,
@@ -102,11 +102,15 @@ export default function PaymentMethodPage() {
       <Text style={styles.title}>Payment Method</Text>
       <ScrollView>
         {cards.map((card) => (
-          <View key={card._id} style={styles.card} onTouchEnd={() => handleCardClick(card)}>
+          <TouchableOpacity 
+            key={card._id} 
+            style={[styles.card, defaultUserCard && defaultUserCard._id === card._id ? styles.activeCard : null]}
+            onPress={() => handleCardClick(card)}
+          >
             <Text style={styles.cardDetails}>{card.bankName} - {card.number}</Text>
             <Text style={styles.cardDetails}>{card.fullName}</Text>
             <Text style={styles.cardDetails}>{card.monthExpiration}/{card.yearExpiration}</Text>
-          </View>
+          </TouchableOpacity>
         ))}
       </ScrollView>
       <View style={styles.inputContainer}>
@@ -159,6 +163,10 @@ const styles = StyleSheet.create({
     marginVertical: 5,
     backgroundColor: '#f8f8f8',
     borderRadius: 5,
+  },
+  activeCard: {
+    borderColor: '#5C67F2',
+    borderWidth: 2,
   },
   cardDetails: {
     fontSize: 16,

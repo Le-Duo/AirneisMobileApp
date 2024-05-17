@@ -14,7 +14,6 @@ apiClient.interceptors.request.use(
     const userInfo = await AsyncStorage.getItem('userInfo');
     if (userInfo) {
       const token = JSON.parse(userInfo).token;
-      console.log('Token retrieved from AsyncStorage:', token);
       config.headers.Authorization = `Bearer ${token}`;
     } else {
       console.log('No user info found in AsyncStorage');

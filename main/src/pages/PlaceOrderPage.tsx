@@ -59,7 +59,7 @@ export default function PlaceOrderPage() {
       console.log(data)
       if (data && data._id) {
         dispatch()
-        navigation.navigate(`Order/${data._id}`)
+        navigation.navigate('Order', { orderId: data._id });
       } else {
         console.error('Unexpected response structure from order creation API.')
       }
@@ -91,7 +91,7 @@ export default function PlaceOrderPage() {
             {cart.shippingAddress.city}, {cart.shippingAddress.postalCode},
             {cart.shippingAddress.country}
           </Text>
-          <Button title="Edit" onPress={() => navigation.navigate('Shipping')} />
+          <Button title="Edit" onPress={() => navigation.navigate('ShippingAddress')} />
         </View>
 
         <View style={styles.card}>
