@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   ImageBackground,
   ActivityIndicator,
   RefreshControl,
+  useColorScheme,
 } from 'react-native';
 import {useGetCategoriesQuery} from '../hooks/categoryHook';
 import {useGetFeaturedProductsQuery} from '../hooks/featuredProductHook';
@@ -32,6 +33,7 @@ export default function HomePage() {
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const {colors} = useTheme();
+  const scheme = useColorScheme(); // Detect theme changes
 
   const {
     data: categories,
@@ -43,6 +45,10 @@ export default function HomePage() {
     isLoading: isLoadingFeaturedProducts,
     error: featuredProductsError,
   } = useGetFeaturedProductsQuery();
+
+  useEffect(() => {
+    // This effect will re-run when `scheme` changes, triggering a re-render
+  }, [scheme]);
 
   if (isLoadingCategories || isLoadingFeaturedProducts) {
     return <ActivityIndicator />;

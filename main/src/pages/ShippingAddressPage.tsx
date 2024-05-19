@@ -1,28 +1,38 @@
-import { useEffect, useState } from 'react';
-import { View, Text, TextInput, Button, ScrollView, TouchableOpacity, StyleSheet, Switch, ActivityIndicator, Alert } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import {useEffect, useState} from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  Switch,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
+import {Picker} from '@react-native-picker/picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
+import {useNavigation, NavigationProp} from '@react-navigation/native';
 import useStore from '../Store';
-import { ShippingAddress } from '../types/Cart';
-import { UserAddress } from '../types/UserInfo';
-import { RootStackParamList } from '../../App';
-import { countries } from '../data/countries';
-import { useAddAddressMutation, useGetUserByIdQuery } from '../hooks/userHook'; 
+import {ShippingAddress} from '../types/Cart';
+import {UserAddress} from '../types/UserInfo';
+import {RootStackParamList} from '../../App';
+import {countries} from '../data/countries';
+import {useAddAddressMutation, useGetUserByIdQuery} from '../hooks/userHook';
 
 export default function ShippingAddressPage() {
-  const navigation = useNavigation<NavigationProp<RootStackParamList, 'ShippingAddress'>>();
-  const { userInfo, saveShippingAddress } = useStore(state => ({
+  const navigation =
+    useNavigation<NavigationProp<RootStackParamList, 'ShippingAddress'>>();
+  const {userInfo, saveShippingAddress} = useStore(state => ({
     userInfo: state.userInfo,
-    saveShippingAddress: state.saveShippingAddress
+    saveShippingAddress: state.saveShippingAddress,
   }));
-  const addAddressMutation = useAddAddressMutation(userInfo?._id || ''); 
+  const addAddressMutation = useAddAddressMutation(userInfo?._id || '');
 
-  const [saveAddress, setSaveAddress] = useState(false); 
+  const [saveAddress, setSaveAddress] = useState(false);
 
   const [addresses, setAddresses] = useState<UserAddress[]>([]);
-  const [selectedAddress, setSelectedAddress] = useState<UserAddress | undefined>();
-
   const [fullName, setFullName] = useState(userInfo?.name || '');
   const [phoneNumber, setPhoneNumber] = useState(userInfo?.phoneNumber || '');
   const [street, setStreet] = useState('');
@@ -31,11 +41,15 @@ export default function ShippingAddressPage() {
   const [country, setCountry] = useState('');
 
   const userConnectedID = userInfo ? userInfo._id : null;
-  const { data: user, error, isLoading } = useGetUserByIdQuery(userConnectedID ?? '');
+  const {
+    data: user,
+    error,
+    isLoading,
+  } = useGetUserByIdQuery(userConnectedID ?? '');
 
   useEffect(() => {
     if (!userInfo) {
-      navigation.navigate('SignIn', { redirect: 'Shipping' });
+      navigation.navigate('SignIn', {redirect: 'Shipping'});
     }
   }, [userInfo, navigation]);
 
@@ -47,9 +61,10 @@ export default function ShippingAddressPage() {
 
   useEffect(() => {
     if (addresses.length > 0) {
-      const defaultAddr = addresses.find((address: UserAddress) => address.isDefault === true);
+      const defaultAddr = addresses.find(
+        (address: UserAddress) => address.isDefault === true,
+      );
       if (defaultAddr) {
-        setSelectedAddress(defaultAddr);
         setStreet(defaultAddr.street);
         setCity(defaultAddr.city);
         setPostalCode(defaultAddr.postalCode);
@@ -69,11 +84,11 @@ export default function ShippingAddressPage() {
     };
 
     if (saveAddress) {
-      addAddressMutation.mutate({ 
+      addAddressMutation.mutate({
         street: street,
         city: city,
         postalCode: postalCode,
-        country: country
+        country: country,
       });
     }
 
@@ -83,7 +98,6 @@ export default function ShippingAddressPage() {
   };
 
   const handleAddressClick = (address: UserAddress) => {
-    setSelectedAddress(address);
     setStreet(address.street);
     setCity(address.city);
     setPostalCode(address.postalCode);
@@ -91,11 +105,11 @@ export default function ShippingAddressPage() {
   };
 
   if (isLoading) {
-    return <ActivityIndicator size="large" color="#0000ff" />;
+    return <ActivityIndicator size="large" color="#005eb8" />;
   }
 
   if (error) {
-    Alert.alert("Error", "Unable to load user data");
+    Alert.alert('Error', 'Unable to load user data');
     return;
   }
 
@@ -135,8 +149,7 @@ export default function ShippingAddressPage() {
       <Picker
         style={styles.picker}
         selectedValue={country}
-        onValueChange={(itemValue, itemIndex) => setCountry(itemValue)}
-      >
+        onValueChange={(itemValue, _itemIndex) => setCountry(itemValue)}>
         {countries.map((country, index) => (
           <Picker.Item key={index} label={country} value={country} />
         ))}
@@ -149,10 +162,16 @@ export default function ShippingAddressPage() {
           onValueChange={setSaveAddress}
         />
       </View>
-      <Button title="Continue" onPress={submitHandler} color="#5C67F2" />
-      {addresses.map((address) => (
-        <TouchableOpacity key={address._id} onPress={() => handleAddressClick(address)} style={styles.addressContainer}>
-          <Text>{address.street}, {address.city}, {address.postalCode}, {address.country}</Text>
+      <Button title="Continue" onPress={submitHandler} color="#005eb8" />
+      {addresses.map(address => (
+        <TouchableOpacity
+          key={address._id}
+          onPress={() => handleAddressClick(address)}
+          style={styles.addressContainer}>
+          <Text>
+            {address.street}, {address.city}, {address.postalCode},{' '}
+            {address.country}
+          </Text>
           {address.isDefault && <Text>Default</Text>}
         </TouchableOpacity>
       ))}
@@ -189,7 +208,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   switch: {
-    transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }],
+    transform: [{scaleX: 1.2}, {scaleY: 1.2}],
   },
   text: {
     flex: 1,
@@ -202,4 +221,3 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
 });
-

@@ -71,7 +71,7 @@ const PasswordResetRequest = () => {
     <View>
       <Text>Email Address</Text>
       <TextInput
-        style={{height: 40, borderColor: 'gray', borderWidth: 1}}
+        style={{height: 40, borderColor: '#005eb8', borderWidth: 1}}
         onChangeText={handleEmailChange}
         value={email}
         placeholder="Enter your email"

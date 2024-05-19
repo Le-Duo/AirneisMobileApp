@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   View,
   Text,
@@ -14,7 +13,7 @@ import store from '../Store';
 import {CartItem} from '../types/Cart';
 import MessageBox from '../components/MessageBox';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { RootStackParamList } from '../../App';
+import {RootStackParamList} from '../../App';
 
 export default function CartPage() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();

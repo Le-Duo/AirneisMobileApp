@@ -1,41 +1,42 @@
-import { View, Text, Button, ScrollView, StyleSheet } from 'react-native'
-import { useNavigation, NavigationProp } from '@react-navigation/native'
-import useStore from '../Store'
-import { useEffect, useState } from 'react'
-import { useCreateOrderMutation } from '../hooks/orderHook'
-import { Helmet } from 'react-helmet-async'
-import LoadingBox from '../components/LoadingBox'
-import { RootStackParamList } from '../../App'
+import {View, Text, Button, ScrollView, StyleSheet} from 'react-native';
+import {useNavigation, NavigationProp} from '@react-navigation/native';
+import useStore from '../Store';
+import {useEffect, useState} from 'react';
+import {useCreateOrderMutation} from '../hooks/orderHook';
+import {Helmet} from 'react-helmet-async';
+import LoadingBox from '../components/LoadingBox';
+import {RootStackParamList} from '../../App';
 
 export default function PlaceOrderPage() {
-  const navigation = useNavigation<NavigationProp<RootStackParamList, "PlaceOrder">>();
+  const navigation =
+    useNavigation<NavigationProp<RootStackParamList, 'PlaceOrder'>>();
 
-  const { cart, userInfo, dispatch } = useStore(state => ({
+  const {cart, userInfo, dispatch} = useStore(state => ({
     cart: state.cart,
     userInfo: state.userInfo,
-    dispatch: state.cartClear
+    dispatch: state.cartClear,
   }));
 
-  const round2 = (num: number) => Math.round(num * 100 + Number.EPSILON) / 100
+  const round2 = (num: number) => Math.round(num * 100 + Number.EPSILON) / 100;
 
   cart.itemsPrice = round2(
-    cart.cartItems.reduce((a, c) => a + c.quantity * c.price, 0)
-  )
+    cart.cartItems.reduce((a, c) => a + c.quantity * c.price, 0),
+  );
   cart.shippingPrice =
     cart.itemsPrice < 400
       ? round2(39)
       : cart.itemsPrice <= 1000
       ? round2(59)
-      : round2(109)
-  cart.taxPrice = round2(0.2 * cart.itemsPrice)
-  cart.totalPrice = cart.itemsPrice + cart.shippingPrice + cart.taxPrice
+      : round2(109);
+  cart.taxPrice = round2(0.2 * cart.itemsPrice);
+  cart.totalPrice = cart.itemsPrice + cart.shippingPrice + cart.taxPrice;
 
-  const { mutateAsync: createOrder } = useCreateOrderMutation()
-  const [isLoading, setIsLoading] = useState(false)
+  const {mutateAsync: createOrder} = useCreateOrderMutation();
+  const [isLoading, setIsLoading] = useState(false);
 
   const placeOrderHandler = async () => {
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       const data = await createOrder({
         orderItems: cart.cartItems,
         shippingAddress: {
@@ -55,26 +56,26 @@ export default function PlaceOrderPage() {
         user: userInfo?._id || '',
         isPaid: false,
         isDelivered: false,
-      })
-      console.log(data)
+      });
+      console.log(data);
       if (data && data._id) {
-        dispatch()
-        navigation.navigate('Order', { orderId: data._id });
+        dispatch();
+        navigation.navigate('Order', {orderId: data._id});
       } else {
-        console.error('Unexpected response structure from order creation API.')
+        console.error('Unexpected response structure from order creation API.');
       }
     } catch (err) {
-      console.error('Error processing order:', err)
+      console.error('Error processing order:', err);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     if (!cart.paymentMethod) {
-      navigation.navigate('Payment')
+      navigation.navigate('Payment');
     }
-  }, [cart, navigation])
+  }, [cart, navigation]);
 
   return (
     <ScrollView>
@@ -86,12 +87,17 @@ export default function PlaceOrderPage() {
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Shipping</Text>
           <Text>
-            <Text style={styles.bold}>Name:</Text> {cart.shippingAddress.fullName}{'\n'}
-            <Text style={styles.bold}>Address:</Text> {cart.shippingAddress.street},
-            {cart.shippingAddress.city}, {cart.shippingAddress.postalCode},
-            {cart.shippingAddress.country}
+            <Text style={styles.bold}>Name:</Text>{' '}
+            {cart.shippingAddress.fullName}
+            {'\n'}
+            <Text style={styles.bold}>Address:</Text>{' '}
+            {cart.shippingAddress.street},{cart.shippingAddress.city},{' '}
+            {cart.shippingAddress.postalCode},{cart.shippingAddress.country}
           </Text>
-          <Button title="Edit" onPress={() => navigation.navigate('ShippingAddress')} />
+          <Button
+            title="Edit"
+            onPress={() => navigation.navigate('ShippingAddress')}
+          />
         </View>
 
         <View style={styles.card}>
@@ -103,9 +109,11 @@ export default function PlaceOrderPage() {
         </View>
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Items</Text>
-          {cart.cartItems.map((item) => (
+          {cart.cartItems.map(item => (
             <View key={item._id} style={styles.item}>
-              <Text>{item.name} x {item.quantity} - £{item.price}</Text>
+              <Text>
+                {item.name} x {item.quantity} - £{item.price}
+              </Text>
             </View>
           ))}
           <Button title="Edit" onPress={() => navigation.navigate('Cart')} />
@@ -125,7 +133,7 @@ export default function PlaceOrderPage() {
         {isLoading && <LoadingBox />}
       </View>
     </ScrollView>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
@@ -159,4 +167,4 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-})
+});

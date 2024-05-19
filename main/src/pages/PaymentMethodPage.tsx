@@ -1,22 +1,38 @@
-import { useEffect, useState } from "react";
-import { View, Text, Button, ScrollView, StyleSheet, TextInput, TouchableOpacity } from "react-native";
-import { useNavigation, NavigationProp } from "@react-navigation/native";
-import { CreditCard } from "../types/CreditCard";
-import { useGetUserByIdQuery, useAddPaymentCardMutation } from "../hooks/userHook";
-import { RootStackParamList } from "../../App";
-import useStore from "../Store";
+import {useEffect, useState} from 'react';
+import {
+  View,
+  Text,
+  Button,
+  ScrollView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+} from 'react-native';
+import {useNavigation, NavigationProp} from '@react-navigation/native';
+import {CreditCard} from '../types/CreditCard';
+import {
+  useGetUserByIdQuery,
+  useAddPaymentCardMutation,
+} from '../hooks/userHook';
+import {RootStackParamList} from '../../App';
+import useStore from '../Store';
 
-type PaymentMethodState = Pick<CreditCard, 'bankName' | 'number' | 'fullName' | 'monthExpiration' | 'yearExpiration'>;
+type PaymentMethodState = Pick<
+  CreditCard,
+  'bankName' | 'number' | 'fullName' | 'monthExpiration' | 'yearExpiration'
+>;
 
 export default function PaymentMethodPage() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const { cart, userInfo, savePaymentMethod } = useStore(state => ({
+  const {cart, userInfo, savePaymentMethod} = useStore(state => ({
     cart: state.cart,
     userInfo: state.userInfo,
-    savePaymentMethod: state.savePaymentMethod
+    savePaymentMethod: state.savePaymentMethod,
   }));
-  const { shippingAddress, paymentMethod } = cart;
-  const [paymentMethodName, setPaymentMethodName] = useState<PaymentMethodState | string>(paymentMethod || "Card");
+  const {shippingAddress, paymentMethod} = cart;
+  const [paymentMethodName, setPaymentMethodName] = useState<
+    PaymentMethodState | string
+  >(paymentMethod || 'Card');
 
   useEffect(() => {
     if (!shippingAddress.street) {
@@ -26,9 +42,15 @@ export default function PaymentMethodPage() {
 
   const userConnectedID = userInfo ? userInfo._id : null;
 
-  const { data: user, error, isLoading } = useGetUserByIdQuery(userConnectedID ?? '');
+  const {
+    data: user,
+    error,
+    isLoading,
+  } = useGetUserByIdQuery(userConnectedID ?? '');
   const [cards, setCards] = useState<CreditCard[]>([]);
-  const [defaultUserCard, setDefaultUserCard] = useState<CreditCard | undefined>();
+  const [defaultUserCard, setDefaultUserCard] = useState<
+    CreditCard | undefined
+  >();
 
   useEffect(() => {
     if (user && user.paymentCards) {
@@ -38,7 +60,7 @@ export default function PaymentMethodPage() {
 
   useEffect(() => {
     if (cards.length > 0) {
-      const defaultCard = cards.find((card) => card.isDefault === true);
+      const defaultCard = cards.find(card => card.isDefault === true);
       if (defaultCard) {
         setDefaultUserCard(defaultCard);
       }
@@ -63,7 +85,7 @@ export default function PaymentMethodPage() {
     } else {
       savePaymentMethod(JSON.stringify(paymentMethodName));
     }
-    navigation.navigate("PlaceOrder");
+    navigation.navigate('PlaceOrder');
   };
 
   const handleCardClick = (card: CreditCard) => {
@@ -81,7 +103,9 @@ export default function PaymentMethodPage() {
   const [newCardExpirationMonth, setNewCardExpirationMonth] = useState('');
   const [newCardExpirationYear, setNewCardExpirationYear] = useState('');
 
-  const addPaymentCardMutation = useAddPaymentCardMutation(userConnectedID?? '');
+  const addPaymentCardMutation = useAddPaymentCardMutation(
+    userConnectedID ?? '',
+  );
 
   const handleAddCard = () => {
     const newCardDetails = {
@@ -89,7 +113,7 @@ export default function PaymentMethodPage() {
       number: newCardNumber,
       fullName: newCardName,
       monthExpiration: parseInt(newCardExpirationMonth),
-      yearExpiration: parseInt(newCardExpirationYear)
+      yearExpiration: parseInt(newCardExpirationYear),
     };
     addPaymentCardMutation.mutate(newCardDetails);
   };
@@ -101,15 +125,23 @@ export default function PaymentMethodPage() {
     <View style={styles.container}>
       <Text style={styles.title}>Payment Method</Text>
       <ScrollView>
-        {cards.map((card) => (
-          <TouchableOpacity 
-            key={card._id} 
-            style={[styles.card, defaultUserCard && defaultUserCard._id === card._id ? styles.activeCard : null]}
-            onPress={() => handleCardClick(card)}
-          >
-            <Text style={styles.cardDetails}>{card.bankName} - {card.number}</Text>
+        {cards.map(card => (
+          <TouchableOpacity
+            key={card._id}
+            style={[
+              styles.card,
+              defaultUserCard && defaultUserCard._id === card._id
+                ? styles.activeCard
+                : null,
+            ]}
+            onPress={() => handleCardClick(card)}>
+            <Text style={styles.cardDetails}>
+              {card.bankName} - {card.number}
+            </Text>
             <Text style={styles.cardDetails}>{card.fullName}</Text>
-            <Text style={styles.cardDetails}>{card.monthExpiration}/{card.yearExpiration}</Text>
+            <Text style={styles.cardDetails}>
+              {card.monthExpiration}/{card.yearExpiration}
+            </Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -118,7 +150,14 @@ export default function PaymentMethodPage() {
           style={styles.input}
           placeholder="Card Number"
           value={newCardNumber}
-          onChangeText={(text) => setNewCardNumber(text.replace(/\s?/g, '').replace(/(\d{4})/g, '$1 ').trim())}
+          onChangeText={text =>
+            setNewCardNumber(
+              text
+                .replace(/\s?/g, '')
+                .replace(/(\d{4})/g, '$1 ')
+                .trim(),
+            )
+          }
           keyboardType="numeric"
         />
         <TextInput
@@ -165,7 +204,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   activeCard: {
-    borderColor: '#5C67F2',
+    borderColor: '#005eb8',
     borderWidth: 2,
   },
   cardDetails: {

@@ -15,7 +15,7 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "typeRoots": ["./node_modules/@types"],
-    "types": ["react", "react-native"]
+    "types": []
   },
   "include": ["src"],
   "exclude": ["node_modules", "babel.config.js", "metro.config.js", "jest.config.js"]

@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   View,
   Text,
@@ -26,17 +25,24 @@ export default function ProductPage() {
   }
 
   const route = useRoute();
-  const {slug} = route.params as RouteParams;
+  const params = route.params as RouteParams | undefined;
+
+  // Move hooks to the top level
+  const {slug} = params || {};
   const {
     data: product,
     isLoading,
     error,
-  } = useGetProductDetailsBySlugQuery(slug);
+  } = useGetProductDetailsBySlugQuery(slug || '');
 
   const {cart, cartAddItem} = useStore(store, state => ({
     cart: state.cart,
     cartAddItem: state.cartAddItem,
   }));
+
+  if (!params) {
+    return <MessageBox variant="danger">No product slug provided</MessageBox>;
+  }
 
   const addToCartHandler = async () => {
     if (!product) {

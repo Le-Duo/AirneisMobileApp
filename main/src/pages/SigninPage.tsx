@@ -22,8 +22,16 @@ type RootStackParamList = {
   PasswordResetRequest: undefined;
 };
 
+type BottomTabParamList = {
+  Home: undefined;
+  Cart: undefined;
+  Profile: undefined;
+  Settings: undefined;
+};
+
 export default function SigninPage() {
-  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NavigationProp<RootStackParamList & BottomTabParamList>>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -36,18 +44,22 @@ export default function SigninPage() {
 
   const {mutateAsync: signin} = useUserSigninMutation();
 
+  const navigateToHome = () => {
+    navigation.navigate('Home');
+  };
+
   useEffect(() => {
     if (userInfo) {
-      navigation.navigate('HomePage');
+      navigateToHome();
     }
-  }, [userInfo, navigation]);
+  }, [userInfo, navigateToHome]);
 
   const submitHandler = async () => {
     try {
       setIsLoading(true);
       const data = await signin({email, password});
       userSignIn(data);
-      navigation.navigate('HomePage');
+      navigateToHome();
     } catch (err) {
       ToastAndroid.show(getError(err as ApiError), ToastAndroid.SHORT);
     } finally {

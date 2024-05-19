@@ -1,7 +1,7 @@
-import { create } from 'zustand';
+import {create} from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { CartItem, ShippingAddress} from './types/Cart';
-import { UserInfo } from './types/UserInfo';
+import {CartItem, ShippingAddress} from './types/Cart';
+import {UserInfo} from './types/UserInfo';
 
 interface StoreState {
   mode: string;

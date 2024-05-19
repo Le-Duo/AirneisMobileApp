@@ -11,6 +11,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {getError} from '../utils';
 import {ApiError} from '../types/APIError';
 import {useGetUserByIdQuery, useUpdateUserMutation} from '../hooks/userHook';
+import useStore from '../Store';
 
 export default function ProfilePage() {
   const [userConnectedID, setUserConnectedID] = useState('');
@@ -41,6 +42,7 @@ export default function ProfilePage() {
     }
   }, [user]);
 
+  const userSignOut = useStore(state => state.userSignOut);
   if (isLoading) {
     return <ActivityIndicator size="large" />;
   }
@@ -61,6 +63,11 @@ export default function ProfilePage() {
       console.log(err);
       ToastAndroid.show(getError(err as ApiError), ToastAndroid.SHORT);
     }
+  };
+
+  const signOutHandler = () => {
+    userSignOut(); // Call the sign-out function
+    ToastAndroid.show('Signed out successfully', ToastAndroid.SHORT);
   };
 
   return (
@@ -101,7 +108,8 @@ export default function ProfilePage() {
         onChangeText={setPhoneNumber}
         value={phoneNumber}
       />
-      <Button onPress={submitHandler} title="Update" color="#841584" />
+      <Button onPress={submitHandler} title="Update" color="#005eb8" />
+      <Button onPress={signOutHandler} title="Sign Out" color="#D9534F" />
     </View>
   );
 }
