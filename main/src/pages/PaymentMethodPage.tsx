@@ -7,6 +7,7 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import {useNavigation, NavigationProp} from '@react-navigation/native';
 import {CreditCard} from '../types/CreditCard';
@@ -96,24 +97,59 @@ export default function PaymentMethodPage() {
       monthExpiration: card.monthExpiration,
       yearExpiration: card.yearExpiration,
     });
+    // Update the input fields with the selected card's details
+    setNewCardNumber(card.number);
+    setNewCardName(card.fullName);
+    setNewCardExpirationMonth(card.monthExpiration.toString());
+    setNewCardExpirationYear(card.yearExpiration.toString());
   };
 
   const [newCardNumber, setNewCardNumber] = useState('');
   const [newCardName, setNewCardName] = useState('');
   const [newCardExpirationMonth, setNewCardExpirationMonth] = useState('');
   const [newCardExpirationYear, setNewCardExpirationYear] = useState('');
+  const [cvv, setCvv] = useState('');
 
   const addPaymentCardMutation = useAddPaymentCardMutation(
     userConnectedID ?? '',
   );
 
   const handleAddCard = () => {
+    if (!newCardNumber || newCardNumber.length < 19) {
+      Alert.alert('Invalid Card Number', 'Please enter a valid card number.');
+      return;
+    }
+    if (!newCardName) {
+      Alert.alert('Invalid Name', 'Please enter the name on the card.');
+      return;
+    }
+    if (
+      !newCardExpirationMonth ||
+      parseInt(newCardExpirationMonth) > 12 ||
+      parseInt(newCardExpirationMonth) < 1
+    ) {
+      Alert.alert('Invalid Month', 'Please enter a valid expiration month.');
+      return;
+    }
+    if (
+      !newCardExpirationYear ||
+      parseInt(newCardExpirationYear) < new Date().getFullYear()
+    ) {
+      Alert.alert('Invalid Year', 'Please enter a valid expiration year.');
+      return;
+    }
+    if (!cvv || !/^\d+$/.test(cvv)) {
+      Alert.alert('Invalid CVV', 'CVV can only contain numbers.');
+      return;
+    }
+
     const newCardDetails = {
       bankName: newCardName,
       number: newCardNumber,
       fullName: newCardName,
       monthExpiration: parseInt(newCardExpirationMonth),
       yearExpiration: parseInt(newCardExpirationYear),
+      cvv: parseInt(cvv),
     };
     addPaymentCardMutation.mutate(newCardDetails);
   };
@@ -178,6 +214,13 @@ export default function PaymentMethodPage() {
           placeholder="Expiration Year"
           value={newCardExpirationYear}
           onChangeText={setNewCardExpirationYear}
+          keyboardType="numeric"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="CVV"
+          value={cvv}
+          onChangeText={text => setCvv(text.replace(/[^0-9]/g, ''))}
           keyboardType="numeric"
         />
         <Button title="Add Card" onPress={handleAddCard} />

@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   View,
   Text,
@@ -6,14 +5,12 @@ import {
   TouchableOpacity,
   ToastAndroid,
   ViewStyle,
-  ImageStyle,
-  TextStyle,
-  StyleProp,
 } from 'react-native';
 import useStore from '../Store';
 import {CartItem} from '../types/Cart';
 import {Product} from '../types/Product';
 import {ConvertProductToCartItem} from '../utils';
+import {useGetStyles} from '../styles';
 
 function ProductItem({
   product,
@@ -26,11 +23,12 @@ function ProductItem({
   onPress?: () => void;
   style?: ViewStyle;
 }) {
-  const {cart, cartAddItem, mode} = useStore(state => ({
+  const {cart, cartAddItem} = useStore(state => ({
     cart: state.cart,
     cartAddItem: state.cartAddItem,
-    mode: state.mode,
   }));
+
+  const {styles, mode} = useGetStyles();
 
   const {cartItems} = cart;
   const actualStock =
@@ -47,26 +45,8 @@ function ProductItem({
     ToastAndroid.show('Success, Product added to cart', ToastAndroid.SHORT);
   };
 
-  const backgroundColor = mode === 'dark' ? '#333' : '#fff';
-  const textColor = mode === 'dark' ? '#fff' : '#000';
-  const buttonBackgroundColor = mode === 'dark' ? '#007bff' : '#005eb8';
-
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={
-        [
-          {
-            padding: 10,
-            margin: 5,
-            backgroundColor,
-            borderWidth: 1,
-            borderColor: buttonBackgroundColor,
-            borderRadius: 5,
-          },
-          style,
-        ] as StyleProp<ViewStyle>
-      }>
+    <TouchableOpacity onPress={onPress} style={[styles.card, style]}>
       <Image
         source={{
           uri:
@@ -74,56 +54,21 @@ function ProductItem({
               product.URLimages[0].replace('../public', '') ||
             '/assets/images/no-image.png',
         }}
-        style={
-          {
-            width: '100%',
-            height: 200,
-            resizeMode: 'cover',
-          } as StyleProp<ImageStyle>
-        }
+        style={styles.image}
       />
       <View style={{padding: 10}}>
-        <Text
-          style={
-            {
-              fontSize: 18,
-              fontWeight: 'bold',
-              color: textColor,
-            } as StyleProp<TextStyle>
-          }>
-          {product.name}
-        </Text>
-        <Text style={{fontSize: 16, color: textColor}}>£{product.price}</Text>
+        <Text style={styles.text}>{product.name}</Text>
+        <Text style={styles.priceText}>£{product.price}</Text>
         {actualStock === 0 ? (
-          <TouchableOpacity
-            style={{backgroundColor: '#aaa', padding: 10, marginTop: 10}}
-            disabled>
-            <Text
-              style={
-                {
-                  color: textColor,
-                  textAlign: 'center',
-                } as StyleProp<TextStyle>
-              }>
-              Out of Stock
-            </Text>
+          <TouchableOpacity style={styles.outOfStockButton} disabled>
+            <Text style={styles.buttonText}>Out of Stock</Text>
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
-            style={{
-              padding: 10,
-              margin: 5,
-              backgroundColor: buttonBackgroundColor,
-            }}
-            onPress={() => addToCartHandler(ConvertProductToCartItem(product))}>
-            <Text
-              style={
-                {
-                  color: textColor,
-                } as StyleProp<TextStyle>
-              }>
-              Add to Cart
-            </Text>
+            style={styles.addToCartButton}
+            onPress={() => addToCartHandler(ConvertProductToCartItem(product))}
+            activeOpacity={0.7}>
+            <Text style={styles.buttonText}>Add to Cart</Text>
           </TouchableOpacity>
         )}
       </View>

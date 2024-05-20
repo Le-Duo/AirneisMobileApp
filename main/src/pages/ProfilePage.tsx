@@ -12,6 +12,7 @@ import {getError} from '../utils';
 import {ApiError} from '../types/APIError';
 import {useGetUserByIdQuery, useUpdateUserMutation} from '../hooks/userHook';
 import useStore from '../Store';
+import {useGetStyles} from '../styles'; // Import useGetStyles
 
 export default function ProfilePage() {
   const [userConnectedID, setUserConnectedID] = useState('');
@@ -43,11 +44,13 @@ export default function ProfilePage() {
   }, [user]);
 
   const userSignOut = useStore(state => state.userSignOut);
+  const styles = useGetStyles();
+
   if (isLoading) {
     return <ActivityIndicator size="large" />;
   }
   if (error) {
-    return <Text>Error fetching one user</Text>;
+    return <Text style={styles.error}>Error fetching one user</Text>;
   }
 
   const submitHandler = async () => {
@@ -66,44 +69,27 @@ export default function ProfilePage() {
   };
 
   const signOutHandler = () => {
-    userSignOut(); // Call the sign-out function
+    userSignOut();
     ToastAndroid.show('Signed out successfully', ToastAndroid.SHORT);
   };
 
   return (
-    <View style={{padding: 20}}>
-      <Text style={{fontSize: 22, fontWeight: 'bold', marginBottom: 20}}>
-        Profile
-      </Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Profile</Text>
       <TextInput
-        style={{
-          borderWidth: 1,
-          borderColor: 'gray',
-          marginBottom: 20,
-          padding: 10,
-        }}
+        style={styles.input}
         placeholder="Name"
         onChangeText={setName}
         value={name}
       />
       <TextInput
-        style={{
-          borderWidth: 1,
-          borderColor: 'gray',
-          marginBottom: 20,
-          padding: 10,
-        }}
+        style={styles.input}
         placeholder="Email"
         onChangeText={setEmail}
         value={email}
       />
       <TextInput
-        style={{
-          borderWidth: 1,
-          borderColor: 'gray',
-          marginBottom: 20,
-          padding: 10,
-        }}
+        style={styles.input}
         placeholder="Phone Number"
         onChangeText={setPhoneNumber}
         value={phoneNumber}

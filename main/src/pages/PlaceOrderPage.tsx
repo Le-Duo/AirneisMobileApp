@@ -1,21 +1,21 @@
-import {View, Text, Button, ScrollView, StyleSheet} from 'react-native';
+import {View, Text, Button, ScrollView} from 'react-native';
 import {useNavigation, NavigationProp} from '@react-navigation/native';
 import useStore from '../Store';
 import {useEffect, useState} from 'react';
 import {useCreateOrderMutation} from '../hooks/orderHook';
-import {Helmet} from 'react-helmet-async';
 import LoadingBox from '../components/LoadingBox';
 import {RootStackParamList} from '../../App';
+import {useGetStyles} from '../styles'; // Import the useGetStyles hook
 
 export default function PlaceOrderPage() {
   const navigation =
     useNavigation<NavigationProp<RootStackParamList, 'PlaceOrder'>>();
-
   const {cart, userInfo, dispatch} = useStore(state => ({
     cart: state.cart,
     userInfo: state.userInfo,
     dispatch: state.cartClear,
   }));
+  const styles = useGetStyles(); // Use the hook to get dynamic styles
 
   const round2 = (num: number) => Math.round(num * 100 + Number.EPSILON) / 100;
 
@@ -78,93 +78,66 @@ export default function PlaceOrderPage() {
   }, [cart, navigation]);
 
   return (
-    <ScrollView>
-      <Helmet>
-        <title>Place Order</title>
-      </Helmet>
-      <Text style={styles.header}>Preview Order</Text>
-      <View style={styles.container}>
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Shipping</Text>
-          <Text>
-            <Text style={styles.bold}>Name:</Text>{' '}
-            {cart.shippingAddress.fullName}
-            {'\n'}
-            <Text style={styles.bold}>Address:</Text>{' '}
-            {cart.shippingAddress.street},{cart.shippingAddress.city},{' '}
-            {cart.shippingAddress.postalCode},{cart.shippingAddress.country}
-          </Text>
-          <Button
-            title="Edit"
-            onPress={() => navigation.navigate('ShippingAddress')}
-          />
-        </View>
+    <ScrollView style={styles.container}>
+      <Text style={styles.title}>Preview Order</Text>
+      <View style={styles.card}>
+        <Text style={styles.title}>Shipping</Text>
+        <Text style={styles.text}>
+          <Text style={styles.bold}>Name:</Text> {cart.shippingAddress.fullName}
+          {'\n'}
+          <Text style={styles.bold}>Address:</Text>{' '}
+          {cart.shippingAddress.street}, {cart.shippingAddress.city},{' '}
+          {cart.shippingAddress.postalCode}, {cart.shippingAddress.country}
+        </Text>
+        <Button
+          title="Edit"
+          onPress={() => navigation.navigate('ShippingAddress')}
+          style={styles.button}
+        />
+      </View>
 
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Payment</Text>
-          <Text>
-            <Text style={styles.bold}>Method:</Text> {cart.paymentMethod}
-          </Text>
-          <Button title="Edit" onPress={() => navigation.navigate('Payment')} />
-        </View>
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Items</Text>
-          {cart.cartItems.map(item => (
-            <View key={item._id} style={styles.item}>
-              <Text>
-                {item.name} x {item.quantity} - £{item.price}
-              </Text>
-            </View>
-          ))}
-          <Button title="Edit" onPress={() => navigation.navigate('Cart')} />
-        </View>
+      <View style={styles.card}>
+        <Text style={styles.title}>Payment</Text>
+        <Text style={styles.text}>
+          <Text style={styles.bold}>Method:</Text> {cart.paymentMethod}
+        </Text>
+        <Button
+          title="Edit"
+          onPress={() => navigation.navigate('Payment')}
+          style={styles.button}
+        />
+      </View>
+      <View style={styles.card}>
+        <Text style={styles.title}>Items</Text>
+        {cart.cartItems.map(item => (
+          <View key={item._id} style={styles.item}>
+            <Text style={styles.text}>
+              {item.name} x {item.quantity} - £{item.price}
+            </Text>
+          </View>
+        ))}
+        <Button
+          title="Edit"
+          onPress={() => navigation.navigate('Cart')}
+          style={styles.button}
+        />
       </View>
       <View style={styles.summary}>
         <Text style={styles.summaryTitle}>Order Summary</Text>
-        <Text>Items: £{cart.itemsPrice.toFixed(2)}</Text>
-        <Text>Shipping: £{cart.shippingPrice.toFixed(2)}</Text>
-        <Text>Tax: £{cart.taxPrice.toFixed(2)}</Text>
-        <Text>Total: £{cart.totalPrice.toFixed(2)}</Text>
+        <Text style={styles.text}>Items: £{cart.itemsPrice.toFixed(2)}</Text>
+        <Text style={styles.text}>
+          Shipping: £{cart.shippingPrice.toFixed(2)}
+        </Text>
+        <Text style={styles.text}>Tax: £{cart.taxPrice.toFixed(2)}</Text>
+        <Text style={styles.text}>Total: £{cart.totalPrice.toFixed(2)}</Text>
         <Button
           title="Place Order"
           onPress={placeOrderHandler}
           disabled={cart.cartItems.length === 0 || isLoading}
+          style={styles.button}
         />
         {isLoading && <LoadingBox />}
       </View>
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {
-    fontSize: 24,
-    marginVertical: 10,
-  },
-  container: {
-    padding: 10,
-  },
-  card: {
-    marginBottom: 10,
-    padding: 10,
-    backgroundColor: '#f8f8f8',
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  bold: {
-    fontWeight: 'bold',
-  },
-  item: {
-    padding: 10,
-  },
-  summary: {
-    padding: 10,
-    backgroundColor: '#f0f0f0',
-  },
-  summaryTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-});

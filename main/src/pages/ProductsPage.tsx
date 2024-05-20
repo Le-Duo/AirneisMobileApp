@@ -1,4 +1,4 @@
-import {View, Text, FlatList} from 'react-native';
+import {Text, FlatList, Image, View} from 'react-native';
 import LoadingBox from '../components/LoadingBox';
 import MessageBox from '../components/MessageBox';
 import ProductItem from '../components/ProductItem';
@@ -10,6 +10,8 @@ import {
   RouteProp,
   NavigationProp,
 } from '@react-navigation/native';
+import {useGetStyles} from '../styles';
+import {useGetCategoryDetailsBySlugQuery} from '../hooks/categoryHook';
 
 interface RouteParams {
   category?: string;
@@ -22,38 +24,35 @@ type RootStackParamList = {
 export default function ProductsPage() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<{params: RouteParams}, 'params'>>();
-  const category = route.params?.category;
+  const categorySlug = route.params?.category;
+  const styles = useGetStyles();
+  const {data: categoryDetails} =
+    useGetCategoryDetailsBySlugQuery(categorySlug);
 
-  // Use useSearchProducts when category is present
   const {
     data: products,
     error,
     isLoading,
   } = useSearchProducts({
-    categories: category ? [category] : undefined,
+    categories: categorySlug ? [categorySlug] : undefined,
   });
 
   if (isLoading) {
     return <LoadingBox />;
   } else if (error) {
-    return (
-      <MessageBox variant="danger">
-        {getError(error as any)}{' '}
-        {/* Adjusted as per instructions, assuming getError can handle generic Error types */}
-      </MessageBox>
-    );
+    return <MessageBox variant="danger">{getError(error as any)}</MessageBox>;
   } else {
     return (
-      <View style={{flex: 1, padding: 10}}>
-        <Text
-          style={{
-            fontSize: 24,
-            fontWeight: 'bold',
-            textAlign: 'center',
-            marginVertical: 10,
-          }}>
-          {category}
-        </Text>
+      <>
+        <Image
+          source={{
+            uri:
+              'https://airneisstaticassets.onrender.com' +
+              categoryDetails.urlImage,
+          }}
+          style={styles.image}
+        />
+        <Text style={styles.imageTitle}>{categoryDetails?.name}</Text>
         <FlatList
           data={products}
           renderItem={({item}) => (
@@ -65,7 +64,7 @@ export default function ProductsPage() {
           )}
           keyExtractor={item => item.slug}
         />
-      </View>
+      </>
     );
   }
 }

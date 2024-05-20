@@ -95,7 +95,12 @@ export default function OrderPage() {
               onPress={() =>
                 navigation.navigate('Product', {productId: item.slug})
               }>
-              <Image source={{uri: item.image}} style={styles.image} />
+              <Image
+                source={{
+                  uri: 'https://airneisstaticassets.onrender.com' + item.image,
+                }}
+                style={styles.image}
+              />
               <Text>{item.name}</Text>
               <Text>{item.quantity}</Text>
               <Text>£{item.price}</Text>

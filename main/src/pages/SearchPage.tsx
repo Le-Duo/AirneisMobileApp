@@ -1,6 +1,13 @@
-import {useState, useEffect, useMemo} from 'react';
-import {ScrollView, View} from 'react-native';
-import {Text, TextInput, Button, ActivityIndicator} from 'react-native-paper';
+import {useState, useEffect, useMemo, useRef} from 'react';
+import {
+  ScrollView,
+  View,
+  Text,
+  TextInput,
+  Button,
+  ActivityIndicator,
+  TouchableOpacity,
+} from 'react-native';
 import {useNavigation, NavigationProp} from '@react-navigation/native';
 import {useRoute, RouteProp} from '@react-navigation/native';
 import {Product} from '../types/Product';
@@ -10,6 +17,7 @@ import {useGetUniqueMaterialsQuery} from '../hooks/productHook';
 import ProductItem from '../components/ProductItem';
 import {RootStackParamList} from '../../App';
 import {useGetStyles} from '../styles';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 const parseQueryParams = (query: string) => {
   const params = new Map();
@@ -38,6 +46,16 @@ const SearchPage = () => {
   const [showFilter, setShowFilter] = useState(false);
   const sortBy = query.get('sortBy') || '';
   const sortOrder = query.get('sortOrder') || 'asc';
+  const [showCategories, setShowCategories] = useState(false);
+  const [showMaterials, setShowMaterials] = useState(false);
+
+  const toggleCategories = () => {
+    setShowCategories(!showCategories);
+  };
+
+  const toggleMaterials = () => {
+    setShowMaterials(!showMaterials);
+  };
 
   const {
     data: displayResults,
@@ -66,7 +84,7 @@ const SearchPage = () => {
     isError: isErrorMaterials,
   } = useGetUniqueMaterialsQuery();
 
-  const styles = useGetStyles();
+  const {styles, mode} = useGetStyles();
 
   useEffect(() => {
     const minPriceValue = query.get('minPrice');
@@ -132,109 +150,116 @@ const SearchPage = () => {
       <View style={styles.container}>
         <Text style={styles.title}>Search</Text>
         <Button
-          icon="filter"
-          mode="contained"
+          title="Filter"
           onPress={handleShow}
-          style={styles.button}>
-          <Text>Filter</Text>
-        </Button>
+          color={styles.button.backgroundColor}
+        />
         <TextInput
-          label="Search"
+          placeholder="Search"
           value={searchQuery}
           onChangeText={setSearchQuery}
-          mode="outlined"
           style={styles.input}
+          placeholderTextColor={mode === 'dark' ? '#000' : '#555'}
         />
-        <Button mode="contained" onPress={handleSearch} style={styles.button}>
-          <Text>Search</Text>
-        </Button>
+        <Button
+          title="Search"
+          onPress={handleSearch}
+          color={styles.button.backgroundColor}
+        />
 
         {showFilter && (
           <View style={styles.filterContainer}>
             <TextInput
-              label="Minimum Price"
+              placeholder="Minimum Price"
               value={minPrice?.toString()}
               onChangeText={(text: string) =>
                 setMinPrice(text ? Number(text) : undefined)
               }
-              mode="outlined"
               style={styles.input}
+              placeholderTextColor={mode === 'dark' ? '#000' : '#fff'}
             />
             <TextInput
-              label="Maximum Price"
+              placeholder="Maximum Price"
               value={maxPrice?.toString()}
               onChangeText={(text: string) =>
                 setMaxPrice(text ? Number(text) : undefined)
               }
-              mode="outlined"
               style={styles.input}
+              placeholderTextColor={mode === 'dark' ? '#000' : '#fff'}
             />
-            <Text style={styles.label}>Categories</Text>
-            {isLoadingCategories ? (
-              <ActivityIndicator
-                animating={true}
-                style={styles.activityIndicator}
+            <TouchableOpacity
+              style={styles.toggleButton}
+              onPress={toggleCategories}>
+              <Text style={styles.toggleLabel}>Categories</Text>
+              <Icon
+                name={showCategories ? 'angle-up' : 'angle-down'}
+                size={24}
+                color="black"
               />
-            ) : isErrorCategories ? (
-              <Text style={styles.error}>Error loading categories</Text>
-            ) : (
-              categories?.map(category => (
-                <Text key={category._id} style={styles.category}>
-                  {category.name}
-                </Text>
-              ))
-            )}
-            <Text style={styles.label}>Materials</Text>
-            {isLoadingMaterials ? (
-              <ActivityIndicator
-                animating={true}
-                style={styles.activityIndicator}
+            </TouchableOpacity>
+            <View
+              style={{
+                display: showCategories ? 'block' : 'none',
+              }}>
+              {showCategories &&
+                (isLoadingCategories ? (
+                  <ActivityIndicator animating={true} size="large" />
+                ) : isErrorCategories ? (
+                  <Text style={styles.error}>Error loading categories</Text>
+                ) : (
+                  categories?.map(category => (
+                    <Text key={category._id} style={styles.category}>
+                      {category.name}
+                    </Text>
+                  ))
+                ))}
+            </View>
+            <TouchableOpacity
+              style={styles.toggleButton}
+              onPress={toggleMaterials}>
+              <Text style={styles.toggleLabel}>Materials</Text>
+              <Icon
+                name={showMaterials ? 'angle-up' : 'angle-down'}
+                size={24}
+                color="black"
               />
-            ) : isErrorMaterials ? (
-              <Text style={styles.error}>Error loading materials</Text>
-            ) : (
-              uniqueMaterials?.map(material => (
-                <Text key={material} style={styles.material}>
-                  {material}
-                </Text>
-              ))
-            )}
+            </TouchableOpacity>
+            <View
+              style={{
+                display: showMaterials ? 'block' : 'none',
+              }}>
+              {showMaterials &&
+                (isLoadingMaterials ? (
+                  <ActivityIndicator animating={true} size="large" />
+                ) : isErrorMaterials ? (
+                  <Text style={styles.error}>Error loading materials</Text>
+                ) : (
+                  uniqueMaterials?.map(material => (
+                    <Text key={material} style={styles.material}>
+                      {material}
+                    </Text>
+                  ))
+                ))}
+            </View>
             <Button
-              mode="contained"
+              title="Apply Filters"
               onPress={handleFilterSubmit}
-              style={styles.button}>
-              <Text>Apply Filters</Text>
-            </Button>
-            <Button
-              mode="contained"
-              color="red"
-              onPress={resetFilters}
-              style={styles.button}>
-              <Text>Reset Filters</Text>
-            </Button>
+              color="#6200ee"
+            />
+            <Button title="Reset Filters" onPress={resetFilters} color="red" />
           </View>
         )}
-
-        <View style={styles.container}>
-          {isLoading ? (
-            <ActivityIndicator
-              animating={true}
-              style={styles.activityIndicator}
-            />
-          ) : isError ? (
-            <Text style={styles.error}>Error fetching results</Text>
-          ) : displayResults && displayResults.length > 0 ? (
-            displayResults.map((product: Product) => (
-              <ProductItem
-                key={product._id}
-                product={product}
-                style={styles.productItem}
-              />
-            ))
-          ) : (
-            <Text style={styles.noResults}>No results found</Text>
-          )}
-        </View>
+        {isLoading ? (
+          <ActivityIndicator animating={true} size="large" />
+        ) : isError ? (
+          <Text style={styles.error}>Error fetching results</Text>
+        ) : displayResults && displayResults.length > 0 ? (
+          displayResults.map((product: Product) => (
+            <ProductItem key={product._id} product={product} />
+          ))
+        ) : (
+          <Text style={styles.noResults}>No results found</Text>
+        )}
       </View>
     </ScrollView>
   );

@@ -23,8 +23,10 @@ import PaymentMethodPage from './src/pages/PaymentMethodPage';
 import ShippingAddressPage from './src/pages/ShippingAddressPage';
 import PlaceOrderPage from './src/pages/PlaceOrderPage';
 import OrderPage from './src/pages/OrderPage';
+import OrderHistoryPage from './src/pages/OrderHistoryPage'; // Imported OrderHistoryPage
 import HomePage from './src/pages/index';
 import SearchPage from './src/pages/SearchPage';
+import MorePage from './src/pages/MorePage';
 import useStore from './src/Store';
 import {FAB, Provider as PaperProvider} from 'react-native-paper';
 
@@ -43,6 +45,7 @@ export type RootStackParamList = {
   PaymentMethod: undefined;
   PlaceOrder: undefined;
   Order: {orderId: string};
+  OrderHistory: undefined; // Added OrderHistory route
   Search: {query?: string};
 };
 
@@ -71,7 +74,9 @@ function HomeStackNavigator() {
       />
       <HomeStack.Screen name="PlaceOrder" component={PlaceOrderPage} />
       <HomeStack.Screen name="Order" component={OrderPage} />
+      <HomeStack.Screen name="OrderHistory" component={OrderHistoryPage} />
       <HomeStack.Screen name="Search" component={SearchPage} />
+      <HomeStack.Screen name="More" component={MorePage} />
     </HomeStack.Navigator>
   );
 }
@@ -88,10 +93,8 @@ export function useSignoutHandler() {
   return signoutHandler;
 }
 
-// Create the bottom tab navigator
 const Tab = createBottomTabNavigator();
 
-// Bottom Tab Navigator
 function MyTabs() {
   const {userInfo} = useStore(state => ({userInfo: state.userInfo}));
 
@@ -147,12 +150,21 @@ function MyTabs() {
           }}
         />
       )}
+      <Tab.Screen
+        name="More"
+        component={MorePage}
+        options={{
+          tabBarIcon: ({color, size}) => (
+            <Icon name="ellipsis-v" color={color} size={size} />
+          ),
+        }}
+      />
     </Tab.Navigator>
   );
 }
 
 function App() {
-  const [theme, setTheme] = useState(useColorScheme()); // Use state to manage theme
+  const [theme, setTheme] = useState(useColorScheme());
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -164,7 +176,11 @@ function App() {
   }, []);
 
   const toggleTheme = () => {
-    setTheme(current => (current === 'dark' ? 'light' : 'dark')); // Toggle theme state
+    setTheme(current => {
+      const newTheme = current === 'dark' ? 'light' : 'dark';
+      store.getState().switchMode();
+      return newTheme;
+    });
   };
 
   if (isLoading) {
@@ -186,6 +202,7 @@ function App() {
               backgroundColor: '#005eb8',
             }}
             icon="theme-light-dark"
+            color="#fff"
             onPress={toggleTheme}
           />
         </NavigationContainer>
