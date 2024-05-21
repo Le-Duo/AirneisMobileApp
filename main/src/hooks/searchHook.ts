@@ -62,7 +62,6 @@ export const useSearchProducts = ({
           },
         })
         .then(res => {
-          console.log('API Response:', res.data.results);
           return res.data.results;
         }),
   });

@@ -7,10 +7,10 @@ import {
   ViewStyle,
 } from 'react-native';
 import useStore from '../Store';
-import {CartItem} from '../types/Cart';
-import {Product} from '../types/Product';
-import {ConvertProductToCartItem} from '../utils';
-import {useGetStyles} from '../styles';
+import { CartItem } from '../types/Cart';
+import { Product } from '../types/Product';
+import { ConvertProductToCartItem } from '../utils';
+import { useGetStyles } from '../styles';
 
 function ProductItem({
   product,
@@ -23,14 +23,14 @@ function ProductItem({
   onPress?: () => void;
   style?: ViewStyle;
 }) {
-  const {cart, cartAddItem} = useStore(state => ({
+  const { cart, cartAddItem } = useStore(state => ({
     cart: state.cart,
     cartAddItem: state.cartAddItem,
   }));
 
-  const {styles, mode} = useGetStyles();
+  const { styles } = useGetStyles();
 
-  const {cartItems} = cart;
+  const { cartItems } = cart;
   const actualStock =
     stockQuantity !== undefined ? stockQuantity : product.stock;
 
@@ -41,7 +41,7 @@ function ProductItem({
       ToastAndroid.show('Sorry, Product is out of stock', ToastAndroid.SHORT);
       return;
     }
-    await cartAddItem({...item, quantity});
+    await cartAddItem({ ...item, quantity });
     ToastAndroid.show('Success, Product added to cart', ToastAndroid.SHORT);
   };
 
@@ -51,12 +51,12 @@ function ProductItem({
         source={{
           uri:
             'https://airneisstaticassets.onrender.com' +
-              product.URLimages[0].replace('../public', '') ||
+            product.URLimages[0].replace('../public', '') ||
             '/assets/images/no-image.png',
         }}
         style={styles.image}
       />
-      <View style={{padding: 10}}>
+      <View style={{ padding: 10 }}>
         <Text style={styles.text}>{product.name}</Text>
         <Text style={styles.priceText}>£{product.price}</Text>
         {actualStock === 0 ? (

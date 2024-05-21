@@ -1,19 +1,19 @@
 import useStore from './Store';
-import {ImageResizeMode, ImageStyle} from 'react-native';
+import { ImageResizeMode, ImageStyle } from 'react-native';
 
 export const useGetStyles = () => {
-  const {mode} = useStore(state => ({mode: state.mode}));
+  const { mode } = useStore(state => ({ mode: state.mode }));
   console.log('Current Mode in useGetStyles:', mode);
   const styles = {
     container: {
       flex: 1,
       padding: 10,
-      backgroundColor: mode === 'dark' ? '#fff' : '#333',
+      backgroundColor: mode === 'dark' ? '#333' : '#fff',
     },
     cartItem: {
       flex: 1,
       padding: 10,
-      backgroundColor: mode === 'dark' ? '#333' : '#fff',
+      backgroundColor: mode === 'dark' ? '#fff' : '#333',
     },
     cartItemImage: {
       width: 100,
@@ -22,17 +22,17 @@ export const useGetStyles = () => {
     cartItemDetail: {
       flex: 1,
       padding: 10,
-      backgroundColor: mode === 'dark' ? '#333' : '#fff',
+      backgroundColor: mode === 'dark' ? '#fff' : '#333',
     },
     cartSummary: {
       flex: 1,
       padding: 10,
-      backgroundColor: mode === 'dark' ? '#333' : '#fff',
+      backgroundColor: mode === 'dark' ? '#fff' : '#333',
     },
     title: {
       fontSize: 20,
       fontWeight: 'bold' as 'bold',
-      color: mode === 'dark' ? '#000' : '#fff',
+      color: mode === 'dark' ? '#fff' : '#000',
       textAlign: 'center' as const,
       textTransform: 'uppercase' as const,
     },
@@ -45,16 +45,15 @@ export const useGetStyles = () => {
     input: {
       padding: 10,
       margin: 5,
-      borderColor: mode === 'dark' ? '#333' : '#005eb8',
+      borderColor: mode === 'dark' ? '#005eb8' : '#333',
       borderWidth: 1,
-      backgroundColor: mode === 'dark' ? '#fff' : '#333',
-      color: mode === 'dark' ? '#000' : '#fff',
-      placeholderTextColor: mode === 'dark' ? '#000' : '#fff',
+      backgroundColor: mode === 'dark' ? '#333' : '#fff',
+      color: mode === 'dark' ? '#fff' : '#000',
     },
     label: {
       fontSize: 16,
       fontWeight: 'bold' as 'bold',
-      color: mode === 'dark' ? '#fff' : '#000',
+      color: mode === 'dark' ? '#000' : '#fff',
     },
     activityIndicator: {
       margin: 5,
@@ -65,32 +64,48 @@ export const useGetStyles = () => {
     category: {
       padding: 10,
       margin: 5,
+      backgroundColor: mode === 'dark' ? '#fff' : '#333',
+    },
+    filterItem: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: 10,
+      margin: 5,
       backgroundColor: mode === 'dark' ? '#333' : '#fff',
+      borderRadius: 5,
+      borderWidth: 1,
+    },
+    filterText: {
+      flex: 1,
+      marginLeft: 5,
+      color: mode === 'dark' ? '#fff' : '#000',
+      fontSize: 16,
     },
     material: {
       padding: 10,
       margin: 5,
-      backgroundColor: mode === 'dark' ? '#333' : '#fff',
+      backgroundColor: mode === 'dark' ? '#fff' : '#333',
     },
     productItem: {
       padding: 10,
       margin: 5,
-      backgroundColor: mode === 'dark' ? '#333' : '#fff',
+      backgroundColor: mode === 'dark' ? '#fff' : '#333',
     },
     noResults: {
       fontSize: 16,
       fontWeight: 'bold' as 'bold',
-      color: mode === 'dark' ? '#fff' : '#000',
+      color: mode === 'dark' ? '#000' : '#fff',
     },
     enhancedContainer: {
       flex: 1,
       padding: 16,
-      backgroundColor: mode === 'dark' ? '#333' : 'white',
+      backgroundColor: mode === 'dark' ? '#fff' : '#333',
     },
     filterContainer: {
       flex: 1,
       padding: 16,
-      backgroundColor: mode === 'dark' ? '#fff' : '#333',
+      backgroundColor: mode === 'dark' ? '#333' : '#fff',
     },
     card: {
       borderWidth: 1,
@@ -98,16 +113,16 @@ export const useGetStyles = () => {
       borderRadius: 5,
       overflow: 'hidden' as 'hidden',
       margin: 10,
-      backgroundColor: mode === 'dark' ? '#fff' : '#333',
+      backgroundColor: mode === 'dark' ? '#333' : '#fff',
     },
     cardTitle: {
       fontSize: 18,
       fontWeight: 'bold',
-      color: mode === 'dark' ? '#000' : '#fff',
+      color: mode === 'dark' ? '#fff' : '#000',
     },
     cardText: {
       fontSize: 16,
-      color: mode === 'dark' ? '#000' : '#fff', // Ensure text is white in dark mode
+      color: mode === 'dark' ? '#fff' : '#000',
     },
     buttonText: {
       color: '#fff',
@@ -117,7 +132,7 @@ export const useGetStyles = () => {
       width: '100%',
       height: 200,
       resizeMode: 'cover',
-      // opacity: actualStock === 0 ? 0.5 : 1,
+
     },
     cardBody: {
       padding: 10,
@@ -129,16 +144,16 @@ export const useGetStyles = () => {
       borderRadius: 5,
     },
     image: {
-      width: '100%' as ImageStyle['width'], // Ensure TypeScript recognizes the percentage string
+      width: '100%' as ImageStyle['width'],
       height: 200,
       resizeMode: 'cover' as ImageResizeMode,
     },
     text: {
-      color: mode === 'dark' ? '#000' : '#fff',
+      color: mode === 'dark' ? '#fff' : '#000',
       fontSize: 16,
     },
     priceText: {
-      color: mode === 'dark' ? '#000' : '#fff',
+      color: mode === 'dark' ? '#fff' : '#000',
       fontSize: 18,
       fontWeight: 'bold' as 'bold',
     },
@@ -162,12 +177,12 @@ export const useGetStyles = () => {
       width: '100%',
       textAlign: 'center',
       top: '50%',
-      transform: [{translateY: -20}],
+      transform: [{ translateY: -20 }],
       fontSize: 40,
       fontWeight: 'bold',
       color: '#fff',
       shadowColor: 'black',
-      shadowOffset: {width: 0, height: 0},
+      shadowOffset: { width: 0, height: 0 },
       shadowOpacity: 0.5,
       shadowRadius: 10,
     },
@@ -184,12 +199,12 @@ export const useGetStyles = () => {
       color: '#005eb8',
     },
     toggleButton: {
-      flexDirection: 'row', // Align items horizontally
-      alignItems: 'center', // Center items vertically within the container
-      justifyContent: 'space-between', // Space between the text and the icon
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      justifyContent: 'space-between' as const,
       padding: 10,
       marginTop: 10,
-      backgroundColor: '#005eb8', // Adjust background color based on mode
+      backgroundColor: '#005eb8',
       borderRadius: 5,
     },
     toggleLabel: {
@@ -199,5 +214,5 @@ export const useGetStyles = () => {
     },
   };
 
-  return {styles, mode};
+  return { styles, mode };
 };

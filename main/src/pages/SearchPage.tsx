@@ -1,4 +1,4 @@
-import {useState, useEffect, useMemo, useRef} from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   ScrollView,
   View,
@@ -8,15 +8,15 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from 'react-native';
-import {useNavigation, NavigationProp} from '@react-navigation/native';
-import {useRoute, RouteProp} from '@react-navigation/native';
-import {Product} from '../types/Product';
-import {useSearchProducts} from '../hooks/searchHook';
-import {useGetCategoriesQuery} from '../hooks/categoryHook';
-import {useGetUniqueMaterialsQuery} from '../hooks/productHook';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
+import { useRoute, RouteProp } from '@react-navigation/native';
+import { Product } from '../types/Product';
+import { useSearchProducts } from '../hooks/searchHook';
+import { useGetCategoriesQuery } from '../hooks/categoryHook';
+import { useGetUniqueMaterialsQuery } from '../hooks/productHook';
 import ProductItem from '../components/ProductItem';
-import {RootStackParamList} from '../../App';
-import {useGetStyles} from '../styles';
+import { RootStackParamList } from '../../App';
+import { useGetStyles } from '../styles';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 const parseQueryParams = (query: string) => {
@@ -41,13 +41,23 @@ const SearchPage = () => {
   const [searchQuery, setSearchQuery] = useState(query.get('query') || '');
   const [minPrice, setMinPrice] = useState<number | undefined>();
   const [maxPrice, setMaxPrice] = useState<number | undefined>();
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<{ id: string, slug: string }[]>([]);
   const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
   const [showFilter, setShowFilter] = useState(false);
   const sortBy = query.get('sortBy') || '';
   const sortOrder = query.get('sortOrder') || 'asc';
   const [showCategories, setShowCategories] = useState(false);
   const [showMaterials, setShowMaterials] = useState(false);
+
+  const [localMinPrice, setLocalMinPrice] = useState(minPrice);
+  const [localMaxPrice, setLocalMaxPrice] = useState(maxPrice);
+
+
+  const applyFilters = () => {
+    setMinPrice(localMinPrice);
+    setMaxPrice(localMaxPrice);
+    setShowFilter(false);
+  };
 
   const toggleCategories = () => {
     setShowCategories(!showCategories);
@@ -63,9 +73,9 @@ const SearchPage = () => {
     isError,
   } = useSearchProducts({
     searchText: searchQuery,
-    minPrice,
-    maxPrice,
-    categories: selectedCategories,
+    minPrice: minPrice ? Number(minPrice) : undefined,
+    maxPrice: maxPrice ? Number(maxPrice) : undefined,
+    categories: selectedCategories.map(cat => cat.slug),
     inStock: query.get('inStock') === 'true',
     materials: selectedMaterials,
     sortBy: sortBy as 'price' | 'dateAdded' | 'inStock' | undefined,
@@ -84,7 +94,7 @@ const SearchPage = () => {
     isError: isErrorMaterials,
   } = useGetUniqueMaterialsQuery();
 
-  const {styles, mode} = useGetStyles();
+  const { styles, mode } = useGetStyles();
 
   useEffect(() => {
     const minPriceValue = query.get('minPrice');
@@ -94,7 +104,7 @@ const SearchPage = () => {
 
     setMinPrice(minPriceValue ? Number(minPriceValue) : undefined);
     setMaxPrice(maxPriceValue ? Number(maxPriceValue) : undefined);
-    setSelectedCategories(categoriesValue ? categoriesValue.split(',') : []);
+    setSelectedCategories(categoriesValue ? categoriesValue.split(',').map((slug: string) => ({ slug, id: slug })) : []);
     setSelectedMaterials(materialsValue ? materialsValue.split(',') : []);
   }, [query]);
 
@@ -102,33 +112,23 @@ const SearchPage = () => {
     e.preventDefault();
     const params = new URLSearchParams({
       query: searchQuery,
-      ...(minPrice && {minPrice: String(minPrice)}),
-      ...(maxPrice && {maxPrice: String(maxPrice)}),
+      ...(minPrice && { minPrice: String(minPrice) }),
+      ...(maxPrice && { maxPrice: String(maxPrice) }),
       ...(selectedCategories.length > 0 && {
-        categories: selectedCategories.join(','),
+        categories: selectedCategories.map(cat => cat.slug).join(','),
       }),
       ...(selectedMaterials.length > 0 && {
         materials: selectedMaterials.join(','),
       }),
     }).toString();
-    navigation.navigate('Search', {query: params});
+
+    console.log("Navigating with query:", params);
+    navigation.navigate('Search', { query: params });
   };
 
   const handleFilterSubmit = (e: any) => {
     e.preventDefault();
-    const params = new URLSearchParams({
-      query: searchQuery,
-      ...(minPrice && {minPrice: String(minPrice)}),
-      ...(maxPrice && {maxPrice: String(maxPrice)}),
-      ...(selectedCategories.length > 0 && {
-        categories: selectedCategories.join(','),
-      }),
-      ...(selectedMaterials.length > 0 && {
-        materials: selectedMaterials.join(','),
-      }),
-    }).toString();
-    navigation.navigate('Search', {query: params});
-    setShowFilter(false);
+    applyFilters();
   };
 
   const resetFilters = () => {
@@ -138,11 +138,34 @@ const SearchPage = () => {
     setSelectedCategories([]);
     setSelectedMaterials([]);
     setShowFilter(false);
-    navigation.navigate('Search', {query: ''});
+    navigation.navigate('Search', { query: '' });
   };
 
   const handleShow = () => {
     setShowFilter(!showFilter);
+  };
+
+  const handleCategorySelect = (selectedCategory: { id: string, slug: string }) => {
+    console.log("Current categories:", selectedCategories);
+    const index = selectedCategories.findIndex(c => c.id === selectedCategory.id);
+
+    if (index > -1) {
+      const newCategories = selectedCategories.filter(c => c.id !== selectedCategory.id);
+      console.log("Removing category, new categories:", newCategories);
+      setSelectedCategories(newCategories);
+    } else {
+      const newCategories = [...selectedCategories, selectedCategory];
+      console.log("Adding category, new categories:", newCategories);
+      setSelectedCategories(newCategories);
+    }
+  };
+
+  const handleMaterialSelect = (material: string) => {
+    if (selectedMaterials.includes(material)) {
+      setSelectedMaterials(selectedMaterials.filter(m => m !== material));
+    } else {
+      setSelectedMaterials([...selectedMaterials, material]);
+    }
   };
 
   return (
@@ -159,7 +182,7 @@ const SearchPage = () => {
           value={searchQuery}
           onChangeText={setSearchQuery}
           style={styles.input}
-          placeholderTextColor={mode === 'dark' ? '#000' : '#555'}
+          placeholderTextColor={mode === 'dark' ? '#aaa' : '#999'}
         />
         <Button
           title="Search"
@@ -171,21 +194,21 @@ const SearchPage = () => {
           <View style={styles.filterContainer}>
             <TextInput
               placeholder="Minimum Price"
-              value={minPrice?.toString()}
+              value={localMinPrice?.toString()}
               onChangeText={(text: string) =>
-                setMinPrice(text ? Number(text) : undefined)
+                setLocalMinPrice(text ? Number(text) : undefined)
               }
               style={styles.input}
-              placeholderTextColor={mode === 'dark' ? '#000' : '#fff'}
+              placeholderTextColor={mode === 'dark' ? '#aaa' : '#999'}
             />
             <TextInput
               placeholder="Maximum Price"
-              value={maxPrice?.toString()}
+              value={localMaxPrice?.toString()}
               onChangeText={(text: string) =>
-                setMaxPrice(text ? Number(text) : undefined)
+                setLocalMaxPrice(text ? Number(text) : undefined)
               }
               style={styles.input}
-              placeholderTextColor={mode === 'dark' ? '#000' : '#fff'}
+              placeholderTextColor={mode === 'dark' ? '#aaa' : '#999'}
             />
             <TouchableOpacity
               style={styles.toggleButton}
@@ -199,20 +222,33 @@ const SearchPage = () => {
             </TouchableOpacity>
             <View
               style={{
-                display: showCategories ? 'block' : 'none',
+                display: showCategories ? 'flex' : 'none',
               }}>
-              {showCategories &&
-                (isLoadingCategories ? (
-                  <ActivityIndicator animating={true} size="large" />
-                ) : isErrorCategories ? (
-                  <Text style={styles.error}>Error loading categories</Text>
-                ) : (
-                  categories?.map(category => (
-                    <Text key={category._id} style={styles.category}>
-                      {category.name}
-                    </Text>
-                  ))
-                ))}
+              <ScrollView horizontal={true}>
+                {showCategories &&
+                  (isLoadingCategories ? (
+                    <ActivityIndicator animating={true} size="large" />
+                  ) : isErrorCategories ? (
+                    <Text style={styles.error}>Error loading categories</Text>
+                  ) : (
+                    categories?.map(category => (
+                      <TouchableOpacity
+                        key={category._id}
+                        style={styles.filterItem}
+                        onPress={() => handleCategorySelect({ id: category._id, slug: category.slug })}
+                      >
+                        <Icon
+                          name={selectedCategories.some(c => c.id === category._id) ? 'check-square' : 'square-o'}
+                          size={24}
+                          color="black"
+                        />
+                        <Text style={styles.filterText}>
+                          {category.name}
+                        </Text>
+                      </TouchableOpacity>
+                    ))
+                  ))}
+              </ScrollView>
             </View>
             <TouchableOpacity
               style={styles.toggleButton}
@@ -226,20 +262,37 @@ const SearchPage = () => {
             </TouchableOpacity>
             <View
               style={{
-                display: showMaterials ? 'block' : 'none',
+                display: showMaterials ? 'flex' : 'none',
               }}>
-              {showMaterials &&
-                (isLoadingMaterials ? (
-                  <ActivityIndicator animating={true} size="large" />
-                ) : isErrorMaterials ? (
-                  <Text style={styles.error}>Error loading materials</Text>
-                ) : (
-                  uniqueMaterials?.map(material => (
-                    <Text key={material} style={styles.material}>
-                      {material}
-                    </Text>
-                  ))
-                ))}
+              <ScrollView horizontal={true}>
+                {showMaterials &&
+                  (isLoadingMaterials ? (
+                    <ActivityIndicator animating={true} size="large" />
+                  ) : isErrorMaterials ? (
+                    <Text style={styles.error}>Error loading materials</Text>
+                  ) : (
+                    uniqueMaterials?.map(material => (
+                      <TouchableOpacity
+                        key={material}
+                        style={styles.filterItem}
+                        onPress={() => handleMaterialSelect(material)}
+                      >
+                        <Icon
+                          name={
+                            selectedMaterials.includes(material)
+                              ? 'check-square'
+                              : 'square-o'
+                          }
+                          size={24}
+                          color="black"
+                        />
+                        <Text style={styles.filterText}>
+                          {' '}{material}
+                        </Text>
+                      </TouchableOpacity>
+                    ))
+                  ))}
+              </ScrollView>
             </View>
             <Button
               title="Apply Filters"
@@ -266,3 +319,7 @@ const SearchPage = () => {
 };
 
 export default SearchPage;
+
+
+
+

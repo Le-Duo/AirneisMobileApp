@@ -6,8 +6,9 @@ module.exports = {
     'plugin:react/recommended',
     'plugin:react-hooks/recommended',
     'plugin:jest/recommended',
+    'plugin:prettier/recommended',
   ],
-  plugins: ['react', 'react-native', 'react-hooks', 'jest'],
+  plugins: ['react', 'react-native', 'react-hooks', 'jest', 'prettier'],
   env: {
     es6: true,
     node: true,
@@ -34,12 +35,13 @@ module.exports = {
     'react-native/no-raw-text': 'warn',
     'react/jsx-filename-extension': [
       1,
-      {extensions: ['.js', '.jsx', '.ts', '.tsx']},
+      { extensions: ['.js', '.jsx', '.ts', '.tsx'] },
     ],
     'no-unused-vars': 'warn',
     'no-console': 'off',
     'react-hooks/rules-of-hooks': 'error',
     'react-hooks/exhaustive-deps': 'warn',
     'react/react-in-jsx-scope': 'off',
+    'prettier/prettier': 'off',
   },
 };

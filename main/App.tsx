@@ -1,4 +1,4 @@
-import {useEffect, useState} from 'react';
+import { useEffect, useState } from 'react';
 import {
   NavigationContainer,
   DarkTheme,
@@ -6,11 +6,11 @@ import {
   useNavigation,
   NavigationProp,
 } from '@react-navigation/native';
-import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-import {useColorScheme, ActivityIndicator} from 'react-native';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useColorScheme, ActivityIndicator } from 'react-native';
 import store from './src/Store';
-import {createStackNavigator} from '@react-navigation/stack';
-import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import ProductPage from './src/pages/ProductPage';
 import ProductsPage from './src/pages/ProductsPage';
@@ -23,19 +23,19 @@ import PaymentMethodPage from './src/pages/PaymentMethodPage';
 import ShippingAddressPage from './src/pages/ShippingAddressPage';
 import PlaceOrderPage from './src/pages/PlaceOrderPage';
 import OrderPage from './src/pages/OrderPage';
-import OrderHistoryPage from './src/pages/OrderHistoryPage'; // Imported OrderHistoryPage
+import OrderHistoryPage from './src/pages/OrderHistoryPage';
 import HomePage from './src/pages/index';
 import SearchPage from './src/pages/SearchPage';
 import MorePage from './src/pages/MorePage';
 import useStore from './src/Store';
-import {FAB, Provider as PaperProvider} from 'react-native-paper';
+import { FAB, Provider as PaperProvider } from 'react-native-paper';
 
 export type RootStackParamList = {
   HomePage: undefined;
-  Product: {productId: string};
-  Products: {category: string};
+  Product: { productId: string };
+  Products: { category: string };
   PasswordResetRequest: undefined;
-  SignIn: {redirect?: string};
+  SignIn: { redirect?: string };
   SignUp: undefined;
   Cart: undefined;
   Profile: undefined;
@@ -44,9 +44,9 @@ export type RootStackParamList = {
   ShippingAddress: undefined;
   PaymentMethod: undefined;
   PlaceOrder: undefined;
-  Order: {orderId: string};
+  Order: { orderId: string };
   OrderHistory: undefined; // Added OrderHistory route
-  Search: {query?: string};
+  Search: { query?: string };
 };
 
 const queryClient = new QueryClient();
@@ -55,7 +55,7 @@ const HomeStack = createStackNavigator();
 
 function HomeStackNavigator() {
   return (
-    <HomeStack.Navigator screenOptions={{headerShown: false}}>
+    <HomeStack.Navigator screenOptions={{ headerShown: false }}>
       <HomeStack.Screen name="HomePage" component={HomePage} />
       <HomeStack.Screen name="Product" component={ProductPage} />
       <HomeStack.Screen name="Products" component={ProductsPage} />
@@ -87,7 +87,7 @@ export function useSignoutHandler() {
   const signoutHandler = async () => {
     console.log('Signing out, clearing user data');
     store.getState().userSignOut();
-    navigation.navigate('SignIn', {redirect: 'HomePage'});
+    navigation.navigate('SignIn', { redirect: 'HomePage' });
   };
 
   return signoutHandler;
@@ -96,15 +96,15 @@ export function useSignoutHandler() {
 const Tab = createBottomTabNavigator();
 
 function MyTabs() {
-  const {userInfo} = useStore(state => ({userInfo: state.userInfo}));
+  const { userInfo } = useStore(state => ({ userInfo: state.userInfo }));
 
   return (
-    <Tab.Navigator screenOptions={{headerShown: false}}>
+    <Tab.Navigator screenOptions={{ headerShown: false }}>
       <Tab.Screen
         name="Home"
         component={HomeStackNavigator}
         options={{
-          tabBarIcon: ({color, size}) => (
+          tabBarIcon: ({ color, size }) => (
             <Icon name="home" color={color} size={size} />
           ),
         }}
@@ -113,7 +113,7 @@ function MyTabs() {
         name="Search"
         component={SearchPage}
         options={{
-          tabBarIcon: ({color, size}) => (
+          tabBarIcon: ({ color, size }) => (
             <Icon name="search" color={color} size={size} />
           ),
         }}
@@ -122,7 +122,7 @@ function MyTabs() {
         name="Cart"
         component={CartPage}
         options={{
-          tabBarIcon: ({color, size}) => (
+          tabBarIcon: ({ color, size }) => (
             <Icon name="shopping-cart" color={color} size={size} />
           ),
         }}
@@ -133,7 +133,7 @@ function MyTabs() {
             name="Profile"
             component={ProfilePage}
             options={{
-              tabBarIcon: ({color, size}) => (
+              tabBarIcon: ({ color, size }) => (
                 <Icon name="user" color={color} size={size} />
               ),
             }}
@@ -144,7 +144,7 @@ function MyTabs() {
           name="SignIn"
           component={SigninPage}
           options={{
-            tabBarIcon: ({color, size}) => (
+            tabBarIcon: ({ color, size }) => (
               <Icon name="sign-in" color={color} size={size} />
             ),
           }}
@@ -154,7 +154,7 @@ function MyTabs() {
         name="More"
         component={MorePage}
         options={{
-          tabBarIcon: ({color, size}) => (
+          tabBarIcon: ({ color, size }) => (
             <Icon name="ellipsis-v" color={color} size={size} />
           ),
         }}
@@ -164,7 +164,7 @@ function MyTabs() {
 }
 
 function App() {
-  const [theme, setTheme] = useState(useColorScheme());
+  const storeMode = useStore(state => state.mode); // Get mode from Zustand store
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -175,14 +175,6 @@ function App() {
     bootstrapAsync();
   }, []);
 
-  const toggleTheme = () => {
-    setTheme(current => {
-      const newTheme = current === 'dark' ? 'light' : 'dark';
-      store.getState().switchMode();
-      return newTheme;
-    });
-  };
-
   if (isLoading) {
     return <ActivityIndicator size="large" color="#005eb8" />;
   }
@@ -191,7 +183,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <PaperProvider>
         <NavigationContainer
-          theme={theme === 'dark' ? DarkTheme : DefaultTheme}>
+          theme={storeMode === 'dark' ? DarkTheme : DefaultTheme}>
           <MyTabs />
           <FAB
             style={{
@@ -203,7 +195,7 @@ function App() {
             }}
             icon="theme-light-dark"
             color="#fff"
-            onPress={toggleTheme}
+            onPress={() => store.getState().switchMode()}
           />
         </NavigationContainer>
       </PaperProvider>
