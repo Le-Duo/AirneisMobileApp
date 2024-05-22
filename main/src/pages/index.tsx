@@ -105,7 +105,7 @@ export default function HomePage() {
                 source={{
                   uri:
                     'https://airneisstaticassets.onrender.com' +
-                    category.urlImage,
+                    category.urlImage.replace('../public', ''),
                 }}
                 style={{height: 200, justifyContent: 'center'}}>
                 <Text

@@ -148,6 +148,11 @@ export const useGetStyles = () => {
       height: 200,
       resizeMode: 'cover' as ImageResizeMode,
     },
+    categoryImage: {
+      width: '100%',
+      height: 200,
+      resizeMode: 'cover',
+    },
     text: {
       color: mode === 'dark' ? '#fff' : '#000',
       fontSize: 16,
@@ -168,9 +173,10 @@ export const useGetStyles = () => {
       borderRadius: 5,
     },
     imageContainer: {
+      //positions possible : absolute, relative, fixed
       position: 'relative',
       width: '100%',
-      height: 'auto',
+      height: 200,
     },
     imageTitle: {
       position: 'absolute',
