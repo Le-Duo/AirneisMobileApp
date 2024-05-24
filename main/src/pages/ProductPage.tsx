@@ -1,23 +1,15 @@
-import {
-  View,
-  Text,
-  Button,
-  ScrollView,
-  Dimensions,
-  Image,
-  ToastAndroid,
-} from 'react-native';
-import {useRoute} from '@react-navigation/native';
+import { View, Text, Button, ScrollView, Dimensions, Image, ToastAndroid, StyleSheet } from 'react-native';
+import { useRoute } from '@react-navigation/native';
 import Carousel from 'react-native-snap-carousel-v4';
 import LoadingBox from '../components/LoadingBox';
 import MessageBox from '../components/MessageBox';
-import {useGetProductDetailsBySlugQuery} from '../hooks/productHook';
-import {ApiError} from '../types/APIError';
-import {getError} from '../utils';
-import {useStore} from 'zustand';
+import { useGetProductDetailsBySlugQuery } from '../hooks/productHook';
+import { ApiError } from '../types/APIError';
+import { getError } from '../utils';
+import { useStore } from 'zustand';
 import store from '../Store';
-import {ConvertProductToCartItem} from '../utils';
-import {Product} from '../types/Product';
+import { ConvertProductToCartItem } from '../utils';
+import { Product } from '../types/Product';
 
 export default function ProductPage() {
   interface RouteParams {
@@ -27,15 +19,10 @@ export default function ProductPage() {
   const route = useRoute();
   const params = route.params as RouteParams | undefined;
 
-  // Move hooks to the top level
-  const {slug} = params || {};
-  const {
-    data: product,
-    isLoading,
-    error,
-  } = useGetProductDetailsBySlugQuery(slug || '');
+  const { slug } = params || {};
+  const { data: product, isLoading, error } = useGetProductDetailsBySlugQuery(slug || '');
 
-  const {cart, cartAddItem} = useStore(store, state => ({
+  const { cart, cartAddItem } = useStore(store, state => ({
     cart: state.cart,
     cartAddItem: state.cartAddItem,
   }));
@@ -60,13 +47,12 @@ export default function ProductPage() {
       quantity,
     });
     ToastAndroid.show('Product added to cart', ToastAndroid.SHORT);
-    console.log('Dispatched CART_ADD_ITEM');
   };
 
-  const renderItem = ({item}: {item: string}) => {
+  const renderItem = ({ item }: { item: string }) => {
     return (
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <Image source={{uri: item}} style={{width: '100%', height: 200}} />
+      <View style={styles.imageContainer}>
+        <Image source={{ uri: item }} style={styles.productImage} />
       </View>
     );
   };
@@ -74,66 +60,128 @@ export default function ProductPage() {
   if (isLoading) {
     return <LoadingBox />;
   } else if (error) {
-    return (
-      <MessageBox variant="danger">
-        {getError(error as unknown as ApiError)}
-      </MessageBox>
-    );
+    return <MessageBox variant="danger">{getError(error as unknown as ApiError)}</MessageBox>;
   } else if (!product) {
     return <MessageBox variant="danger">Product Not Found</MessageBox>;
   } else {
     return (
-      <ScrollView>
-        <View style={{padding: 10}}>
+      <ScrollView style={styles.container}>
+        <View style={styles.innerContainer}>
           <Carousel
             data={product.URLimages.map(
-              image =>
-                'https://airneisstaticassets.onrender.com' +
-                image.replace('../public', ''),
+              image => 'https://airneisstaticassets.onrender.com' + image.replace('../public', ''),
             )}
             renderItem={renderItem}
             sliderWidth={Dimensions.get('window').width}
             itemWidth={300}
             vertical={false}
           />
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}>
-            <Text style={{fontSize: 24, fontWeight: 'bold'}}>
-              {product.name}
-            </Text>
-            <Text
-              style={{
-                fontSize: 24,
-                fontWeight: 'bold',
-              }}>{`£${product.price}`}</Text>
+          <View style={styles.detailsContainer}>
+            <Text style={styles.productName}>{product.name}</Text>
+            <Text style={styles.productPrice}>{`£${product.price}`}</Text>
           </View>
-          <Text>{product.stock > 0 ? 'In Stock' : 'Out of Stock'}</Text>
+          <Text style={styles.stockText}>{product.stock > 0 ? 'In Stock' : 'Out of Stock'}</Text>
           <Button
             title={product.stock > 0 ? 'ADD TO CART' : 'OUT OF STOCK'}
             onPress={addToCartHandler}
             disabled={product.stock === 0}
+            style={styles.cartButton}
           />
-          <View style={{marginVertical: 5}}>
-            <Text style={{fontWeight: 'bold'}}>Description:</Text>
-            <Text>{product.description}</Text>
+          <View style={styles.descriptionContainer}>
+            <Text style={styles.descriptionTitle}>Description:</Text>
+            <Text style={styles.descriptionText}>{product.description}</Text>
           </View>
-          <View style={{marginVertical: 5}}>
-            <Text style={{fontWeight: 'bold'}}>Materials:</Text>
+          <View style={styles.materialsContainer}>
+            <Text style={styles.materialsTitle}>Materials:</Text>
             {product.materials.map((material, index) => (
-              <Text key={index}>{material.trim()}</Text>
+              <Text key={index} style={styles.materialsText}>{material.trim()}</Text>
             ))}
           </View>
-          <View style={{marginVertical: 5, alignItems: 'center'}}>
-            <Text style={{fontWeight: 'bold', fontSize: 20}}>
-              SIMILAR PRODUCTS
-            </Text>
+          <View style={styles.similarProductsContainer}>
+            <Text style={styles.similarProductsTitle}>SIMILAR PRODUCTS</Text>
           </View>
         </View>
       </ScrollView>
     );
   }
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  innerContainer: {
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    shadowColor: 'black',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  imageContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  productImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+  },
+  detailsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  productName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  productPrice: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+  stockText: {
+    fontSize: 18,
+    marginTop: 10,
+  },
+  cartButton: {
+    backgroundColor: '#005eb8',
+    borderRadius: 10,
+    paddingVertical: 10,
+    marginTop: 20,
+  },
+  descriptionContainer: {
+    marginTop: 20,
+  },
+  descriptionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  descriptionText: {
+    fontSize: 16,
+  },
+  materialsContainer: {
+    marginTop: 20,
+  },
+  materialsTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  materialsText: {
+    fontSize: 16,
+  },
+  similarProductsContainer: {
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  similarProductsTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+});

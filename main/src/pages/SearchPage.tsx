@@ -8,8 +8,9 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from 'react-native';
-import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation, NavigationProp , useRoute, RouteProp } from '@react-navigation/native';
+
+import Icon from 'react-native-vector-icons/FontAwesome';
 import { Product } from '../types/Product';
 import { useSearchProducts } from '../hooks/searchHook';
 import { useGetCategoriesQuery } from '../hooks/categoryHook';
@@ -17,7 +18,6 @@ import { useGetUniqueMaterialsQuery } from '../hooks/productHook';
 import ProductItem from '../components/ProductItem';
 import { RootStackParamList } from '../../App';
 import { useGetStyles } from '../styles';
-import Icon from 'react-native-vector-icons/FontAwesome';
 
 const parseQueryParams = (query: string) => {
   const params = new Map();
@@ -30,7 +30,7 @@ const parseQueryParams = (query: string) => {
   return params;
 };
 
-const SearchPage = () => {
+function SearchPage() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, 'Search'>>();
   const query = useMemo(
@@ -171,7 +171,6 @@ const SearchPage = () => {
   return (
     <ScrollView>
       <View style={styles.container}>
-        <Text style={styles.title}>Search</Text>
         <Button
           title="Filter"
           onPress={handleShow}
@@ -224,10 +223,10 @@ const SearchPage = () => {
               style={{
                 display: showCategories ? 'flex' : 'none',
               }}>
-              <ScrollView horizontal={true}>
+              <ScrollView horizontal>
                 {showCategories &&
                   (isLoadingCategories ? (
-                    <ActivityIndicator animating={true} size="large" />
+                    <ActivityIndicator animating size="large" />
                   ) : isErrorCategories ? (
                     <Text style={styles.error}>Error loading categories</Text>
                   ) : (
@@ -264,10 +263,10 @@ const SearchPage = () => {
               style={{
                 display: showMaterials ? 'flex' : 'none',
               }}>
-              <ScrollView horizontal={true}>
+              <ScrollView horizontal>
                 {showMaterials &&
                   (isLoadingMaterials ? (
-                    <ActivityIndicator animating={true} size="large" />
+                    <ActivityIndicator animating size="large" />
                   ) : isErrorMaterials ? (
                     <Text style={styles.error}>Error loading materials</Text>
                   ) : (
@@ -303,12 +302,12 @@ const SearchPage = () => {
           </View>
         )}
         {isLoading ? (
-          <ActivityIndicator animating={true} size="large" />
+          <ActivityIndicator animating size="large" />
         ) : isError ? (
           <Text style={styles.error}>Error fetching results</Text>
         ) : displayResults && displayResults.length > 0 ? (
           displayResults.map((product: Product) => (
-            <ProductItem key={product._id} product={product} />
+            <ProductItem key={product._id} product={product} stockQuantity={product.quantity} onPress={() => navigation.navigate('Product', {slug: product.slug})}/>
           ))
         ) : (
           <Text style={styles.noResults}>No results found</Text>
@@ -316,7 +315,7 @@ const SearchPage = () => {
       </View>
     </ScrollView>
   );
-};
+}
 
 export default SearchPage;
 

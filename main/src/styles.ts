@@ -1,6 +1,22 @@
 import useStore from './Store';
 import { ImageResizeMode, ImageStyle } from 'react-native';
 
+export const headerStyles = {
+  headerStyle: {
+    backgroundColor: '#f8f9fa',
+    elevation: 0,
+    shadowOpacity: 0,
+    borderBottomWidth: 0,
+    height: 30,
+  },
+  headerTintColor: '#005eb8',
+  headerTitleStyle: {
+    fontWeight: 'bold' as 'bold',
+    fontSize: 18,
+  },
+  headerTitleAlign: 'center' as 'center',
+};
+
 export const useGetStyles = () => {
   const { mode } = useStore(state => ({ mode: state.mode }));
   console.log('Current Mode in useGetStyles:', mode);
@@ -220,5 +236,6 @@ export const useGetStyles = () => {
     },
   };
 
-  return { styles, mode };
+  return { styles, mode, headerStyles };
 };
+

@@ -31,7 +31,6 @@ module.exports = {
   rules: {
     'react-native/no-unused-styles': 'warn',
     'react-native/split-platform-components': 'warn',
-    'react-native/no-inline-styles': 'warn',
     'react-native/no-raw-text': 'warn',
     'react/jsx-filename-extension': [
       1,

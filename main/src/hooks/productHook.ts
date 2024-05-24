@@ -3,8 +3,7 @@ import apiClient from '../apiClient';
 import {Product} from '../types/Product';
 import {Stock} from '../types/Stock';
 
-export const useUpdateProductMutation = () => {
-  return useMutation<Product, Error, Product>({
+export const useUpdateProductMutation = () => useMutation<Product, Error, Product>({
     mutationFn: async (product: Product) => {
       const payload: any = {
         _id: product._id,
@@ -32,12 +31,10 @@ export const useUpdateProductMutation = () => {
       // This can be overridden by the component using this hook
     },
   });
-};
 
 export const useGetProductsQuery = (
   category: string | null,
-): UseQueryResult<Product[], Error> => {
-  return useQuery({
+): UseQueryResult<Product[], Error> => useQuery({
     queryKey: ['getProducts', category],
     queryFn: async () => {
       const endpoint = category
@@ -57,14 +54,13 @@ export const useGetProductsQuery = (
         )?.quantity;
         return {
           ...product,
-          stock: stock,
+          stock,
         };
       });
 
       return productsWithStock;
     },
   });
-};
 
 export const useGetProductDetailsBySlugQuery = (slug: string) =>
   useQuery({
@@ -99,8 +95,7 @@ export const useGetProductDetailsBySlugQuery = (slug: string) =>
 export const useGetUniqueMaterialsQuery = (): UseQueryResult<
   string[],
   Error
-> => {
-  return useQuery({
+> => useQuery({
     queryKey: ['getUniqueMaterials'],
     queryFn: async () => {
       const products = (await apiClient.get<Product[]>('api/products')).data;
@@ -109,10 +104,16 @@ export const useGetUniqueMaterialsQuery = (): UseQueryResult<
       return uniqueMaterials;
     },
   });
-};
 
-export const useDeleteProductMutation = () => {
-  return useMutation({
+export const useGetSimilarProductsQuery = (categoryId: string, productId: string) => useQuery({
+    queryKey: ['similarProducts', categoryId, productId],
+    queryFn: async () => {
+      const { data } = await apiClient.get(`/api/products/similar/${categoryId}/${productId}`);
+      return data;
+    }
+  });
+
+export const useDeleteProductMutation = () => useMutation({
     mutationFn: async (id: string) => {
       try {
         const response = await apiClient.delete(`api/products/${id}`);
@@ -123,10 +124,8 @@ export const useDeleteProductMutation = () => {
       }
     },
   });
-};
 
-export const useCreateProductMutation = () => {
-  return useMutation<Product, Error, Product, unknown>({
+export const useCreateProductMutation = () => useMutation<Product, Error, Product, unknown>({
     mutationFn: async (product: Product): Promise<Product> => {
       console.log('Creating product:', product);
       const response = await apiClient.post<Product>('api/products', {
@@ -149,4 +148,3 @@ export const useCreateProductMutation = () => {
       console.log('Product creation successful:', data);
     },
   });
-};
