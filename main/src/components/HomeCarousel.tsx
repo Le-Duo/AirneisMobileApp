@@ -6,15 +6,30 @@ import {
   ActivityIndicator,
   StyleSheet,
   Dimensions,
+  ViewStyle,
 } from 'react-native';
 import Carousel, {Pagination} from 'react-native-snap-carousel-v4';
 import {useGetCarouselItemsQuery} from '../hooks/carouselHook';
+import {useGetStyles} from '../styles';
 
 const {width: screenWidth} = Dimensions.get('window');
 
-const HomeCarousel = () => {
+interface HomeCarouselProps {
+  style?: ViewStyle;
+}
+
+const HomeCarousel = ({ style }: HomeCarouselProps) => {
   const {data: items, isLoading, error} = useGetCarouselItemsQuery();
   const [activeSlide, setActiveSlide] = useState(0);
+  const {mode} = useGetStyles();
+
+  const dynamicDotStyle = {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    marginHorizontal: 8,
+    backgroundColor: mode === 'dark' ? 'rgba(255, 255, 255, 0.92)' : 'rgba(0, 0, 0, 0.92)',
+  };
 
   const renderItem = ({item}: {item: any}) => {
     const {src, caption} = item as {src: string; caption: string};
@@ -43,7 +58,7 @@ const HomeCarousel = () => {
   }
 
   return (
-    <View>
+    <View style={style}>
       <Carousel
         data={items}
         renderItem={renderItem}
@@ -59,7 +74,7 @@ const HomeCarousel = () => {
         dotsLength={items.length}
         activeDotIndex={activeSlide}
         containerStyle={styles.paginationContainer}
-        dotStyle={styles.paginationDot}
+        dotStyle={dynamicDotStyle}
         inactiveDotStyle={styles.inactiveDotStyle}
         inactiveDotOpacity={0.4}
         inactiveDotScale={0.6}
@@ -98,14 +113,7 @@ const styles = StyleSheet.create({
     textShadowRadius: 10,
   },
   paginationContainer: {
-    marginTop: -25,
-  },
-  paginationDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    marginHorizontal: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.92)',
+    marginVertical: -20,
   },
   inactiveDotStyle: {},
 });

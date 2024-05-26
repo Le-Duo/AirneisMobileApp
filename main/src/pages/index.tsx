@@ -33,7 +33,7 @@ export default function HomePage() {
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const {colors} = useTheme();
-  const scheme = useColorScheme(); // Detect theme changes
+  const scheme = useColorScheme();
 
   const {
     data: categories,
@@ -46,9 +46,7 @@ export default function HomePage() {
     error: featuredProductsError,
   } = useGetFeaturedProductsQuery();
 
-  useEffect(() => {
-    // This effect will re-run when `scheme` changes, triggering a re-render
-  }, [scheme]);
+  useEffect(() => {}, [scheme]);
 
   if (isLoadingCategories || isLoadingFeaturedProducts) {
     return <ActivityIndicator />;
@@ -66,13 +64,12 @@ export default function HomePage() {
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
       style={{backgroundColor: colors.background}}>
-      <View>
+      <View style={{paddingTop: 10}}>
         <HomeCarousel />
         <View
           style={{
             alignItems: 'center',
             justifyContent: 'center',
-            marginVertical: 10,
           }}>
           <Text
             style={{
@@ -100,7 +97,7 @@ export default function HomePage() {
               onPress={() =>
                 navigation.navigate('Products', {category: category.slug})
               }
-              style={{overflow: 'hidden', margin: 10}}>
+              style={{overflow: 'hidden', margin: 10, borderRadius: 10}}>
               <ImageBackground
                 source={{
                   uri:

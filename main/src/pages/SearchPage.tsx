@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import {useState, useEffect, useMemo} from 'react';
 import {
   ScrollView,
   View,
@@ -8,16 +8,21 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from 'react-native';
-import { useNavigation, NavigationProp , useRoute, RouteProp } from '@react-navigation/native';
+import {
+  useNavigation,
+  NavigationProp,
+  useRoute,
+  RouteProp,
+} from '@react-navigation/native';
 
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { Product } from '../types/Product';
-import { useSearchProducts } from '../hooks/searchHook';
-import { useGetCategoriesQuery } from '../hooks/categoryHook';
-import { useGetUniqueMaterialsQuery } from '../hooks/productHook';
+import {Product} from '../types/Product';
+import {useSearchProducts} from '../hooks/searchHook';
+import {useGetCategoriesQuery} from '../hooks/categoryHook';
+import {useGetUniqueMaterialsQuery} from '../hooks/productHook';
 import ProductItem from '../components/ProductItem';
-import { RootStackParamList } from '../../App';
-import { useGetStyles } from '../styles';
+import {RootStackParamList} from '../../App';
+import {useGetStyles} from '../styles';
 
 const parseQueryParams = (query: string) => {
   const params = new Map();
@@ -41,31 +46,10 @@ function SearchPage() {
   const [searchQuery, setSearchQuery] = useState(query.get('query') || '');
   const [minPrice, setMinPrice] = useState<number | undefined>();
   const [maxPrice, setMaxPrice] = useState<number | undefined>();
-  const [selectedCategories, setSelectedCategories] = useState<{ id: string, slug: string }[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<
+    {id: string; slug: string}[]
+  >([]);
   const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
-  const [showFilter, setShowFilter] = useState(false);
-  const sortBy = query.get('sortBy') || '';
-  const sortOrder = query.get('sortOrder') || 'asc';
-  const [showCategories, setShowCategories] = useState(false);
-  const [showMaterials, setShowMaterials] = useState(false);
-
-  const [localMinPrice, setLocalMinPrice] = useState(minPrice);
-  const [localMaxPrice, setLocalMaxPrice] = useState(maxPrice);
-
-
-  const applyFilters = () => {
-    setMinPrice(localMinPrice);
-    setMaxPrice(localMaxPrice);
-    setShowFilter(false);
-  };
-
-  const toggleCategories = () => {
-    setShowCategories(!showCategories);
-  };
-
-  const toggleMaterials = () => {
-    setShowMaterials(!showMaterials);
-  };
 
   const {
     data: displayResults,
@@ -73,241 +57,88 @@ function SearchPage() {
     isError,
   } = useSearchProducts({
     searchText: searchQuery,
-    minPrice: minPrice ? Number(minPrice) : undefined,
-    maxPrice: maxPrice ? Number(maxPrice) : undefined,
+    minPrice: minPrice,
+    maxPrice: maxPrice,
     categories: selectedCategories.map(cat => cat.slug),
-    inStock: query.get('inStock') === 'true',
     materials: selectedMaterials,
-    sortBy: sortBy as 'price' | 'dateAdded' | 'inStock' | undefined,
-    sortOrder: sortOrder as 'asc' | 'desc' | undefined,
   });
 
-  const {
-    data: categories,
-    isLoading: isLoadingCategories,
-    isError: isErrorCategories,
-  } = useGetCategoriesQuery();
+  const {styles, mode} = useGetStyles();
 
-  const {
-    data: uniqueMaterials,
-    isLoading: isLoadingMaterials,
-    isError: isErrorMaterials,
-  } = useGetUniqueMaterialsQuery();
+  // Example of fetching categories and materials
+  const { data: categoriesData, isLoading: isLoadingCategories } = useGetCategoriesQuery();
+  const { data: materialsData, isLoading: isLoadingMaterials } = useGetUniqueMaterialsQuery();
 
-  const { styles, mode } = useGetStyles();
-
-  useEffect(() => {
-    const minPriceValue = query.get('minPrice');
-    const maxPriceValue = query.get('maxPrice');
-    const categoriesValue = query.get('categories');
-    const materialsValue = query.get('materials');
-
-    setMinPrice(minPriceValue ? Number(minPriceValue) : undefined);
-    setMaxPrice(maxPriceValue ? Number(maxPriceValue) : undefined);
-    setSelectedCategories(categoriesValue ? categoriesValue.split(',').map((slug: string) => ({ slug, id: slug })) : []);
-    setSelectedMaterials(materialsValue ? materialsValue.split(',') : []);
-  }, [query]);
+  // Ensure data is set in state variables and passed to FilterScreen
+  const openFilterScreen = () => {
+    if (!isLoadingCategories && !isLoadingMaterials && categoriesData && materialsData) {
+      navigation.navigate('FilterScreen', {
+        minPrice,
+        maxPrice,
+        selectedCategories,
+        selectedMaterials,
+        categories: categoriesData,
+        materials: materialsData,
+        applyFilters: (localMinPrice, localMaxPrice, localSelectedCategories, localSelectedMaterials) => {
+          setMinPrice(localMinPrice);
+          setMaxPrice(localMaxPrice);
+          setSelectedCategories(localSelectedCategories);
+          setSelectedMaterials(localSelectedMaterials);
+        },
+        resetFilters: () => {
+          setSearchQuery('');
+          setMinPrice(undefined);
+          setMaxPrice(undefined);
+          setSelectedCategories([]);
+          setSelectedMaterials([]);
+        }
+      });
+    } else {
+      // Handle loading or error state
+      console.error("Data is still loading or not available.");
+    }
+  };
 
   const handleSearch = (e: any) => {
     e.preventDefault();
-    const params = new URLSearchParams({
-      query: searchQuery,
-      ...(minPrice && { minPrice: String(minPrice) }),
-      ...(maxPrice && { maxPrice: String(maxPrice) }),
-      ...(selectedCategories.length > 0 && {
+    navigation.navigate('Search', {
+      query: new URLSearchParams({
+        query: searchQuery,
+        minPrice: minPrice?.toString(),
+        maxPrice: maxPrice?.toString(),
         categories: selectedCategories.map(cat => cat.slug).join(','),
-      }),
-      ...(selectedMaterials.length > 0 && {
         materials: selectedMaterials.join(','),
-      }),
-    }).toString();
-
-    console.log("Navigating with query:", params);
-    navigation.navigate('Search', { query: params });
-  };
-
-  const handleFilterSubmit = (e: any) => {
-    e.preventDefault();
-    applyFilters();
-  };
-
-  const resetFilters = () => {
-    setSearchQuery('');
-    setMinPrice(undefined);
-    setMaxPrice(undefined);
-    setSelectedCategories([]);
-    setSelectedMaterials([]);
-    setShowFilter(false);
-    navigation.navigate('Search', { query: '' });
-  };
-
-  const handleShow = () => {
-    setShowFilter(!showFilter);
-  };
-
-  const handleCategorySelect = (selectedCategory: { id: string, slug: string }) => {
-    console.log("Current categories:", selectedCategories);
-    const index = selectedCategories.findIndex(c => c.id === selectedCategory.id);
-
-    if (index > -1) {
-      const newCategories = selectedCategories.filter(c => c.id !== selectedCategory.id);
-      console.log("Removing category, new categories:", newCategories);
-      setSelectedCategories(newCategories);
-    } else {
-      const newCategories = [...selectedCategories, selectedCategory];
-      console.log("Adding category, new categories:", newCategories);
-      setSelectedCategories(newCategories);
-    }
-  };
-
-  const handleMaterialSelect = (material: string) => {
-    if (selectedMaterials.includes(material)) {
-      setSelectedMaterials(selectedMaterials.filter(m => m !== material));
-    } else {
-      setSelectedMaterials([...selectedMaterials, material]);
-    }
+      }).toString()
+    });
   };
 
   return (
     <ScrollView>
       <View style={styles.container}>
-        <Button
-          title="Filter"
-          onPress={handleShow}
-          color={styles.button.backgroundColor}
-        />
-        <TextInput
-          placeholder="Search"
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          style={styles.input}
-          placeholderTextColor={mode === 'dark' ? '#aaa' : '#999'}
-        />
-        <Button
-          title="Search"
-          onPress={handleSearch}
-          color={styles.button.backgroundColor}
-        />
-
-        {showFilter && (
-          <View style={styles.filterContainer}>
-            <TextInput
-              placeholder="Minimum Price"
-              value={localMinPrice?.toString()}
-              onChangeText={(text: string) =>
-                setLocalMinPrice(text ? Number(text) : undefined)
-              }
-              style={styles.input}
-              placeholderTextColor={mode === 'dark' ? '#aaa' : '#999'}
-            />
-            <TextInput
-              placeholder="Maximum Price"
-              value={localMaxPrice?.toString()}
-              onChangeText={(text: string) =>
-                setLocalMaxPrice(text ? Number(text) : undefined)
-              }
-              style={styles.input}
-              placeholderTextColor={mode === 'dark' ? '#aaa' : '#999'}
-            />
-            <TouchableOpacity
-              style={styles.toggleButton}
-              onPress={toggleCategories}>
-              <Text style={styles.toggleLabel}>Categories</Text>
-              <Icon
-                name={showCategories ? 'angle-up' : 'angle-down'}
-                size={24}
-                color="black"
-              />
-            </TouchableOpacity>
-            <View
-              style={{
-                display: showCategories ? 'flex' : 'none',
-              }}>
-              <ScrollView horizontal>
-                {showCategories &&
-                  (isLoadingCategories ? (
-                    <ActivityIndicator animating size="large" />
-                  ) : isErrorCategories ? (
-                    <Text style={styles.error}>Error loading categories</Text>
-                  ) : (
-                    categories?.map(category => (
-                      <TouchableOpacity
-                        key={category._id}
-                        style={styles.filterItem}
-                        onPress={() => handleCategorySelect({ id: category._id, slug: category.slug })}
-                      >
-                        <Icon
-                          name={selectedCategories.some(c => c.id === category._id) ? 'check-square' : 'square-o'}
-                          size={24}
-                          color="black"
-                        />
-                        <Text style={styles.filterText}>
-                          {category.name}
-                        </Text>
-                      </TouchableOpacity>
-                    ))
-                  ))}
-              </ScrollView>
-            </View>
-            <TouchableOpacity
-              style={styles.toggleButton}
-              onPress={toggleMaterials}>
-              <Text style={styles.toggleLabel}>Materials</Text>
-              <Icon
-                name={showMaterials ? 'angle-up' : 'angle-down'}
-                size={24}
-                color="black"
-              />
-            </TouchableOpacity>
-            <View
-              style={{
-                display: showMaterials ? 'flex' : 'none',
-              }}>
-              <ScrollView horizontal>
-                {showMaterials &&
-                  (isLoadingMaterials ? (
-                    <ActivityIndicator animating size="large" />
-                  ) : isErrorMaterials ? (
-                    <Text style={styles.error}>Error loading materials</Text>
-                  ) : (
-                    uniqueMaterials?.map(material => (
-                      <TouchableOpacity
-                        key={material}
-                        style={styles.filterItem}
-                        onPress={() => handleMaterialSelect(material)}
-                      >
-                        <Icon
-                          name={
-                            selectedMaterials.includes(material)
-                              ? 'check-square'
-                              : 'square-o'
-                          }
-                          size={24}
-                          color="black"
-                        />
-                        <Text style={styles.filterText}>
-                          {' '}{material}
-                        </Text>
-                      </TouchableOpacity>
-                    ))
-                  ))}
-              </ScrollView>
-            </View>
-            <Button
-              title="Apply Filters"
-              onPress={handleFilterSubmit}
-              color="#6200ee"
-            />
-            <Button title="Reset Filters" onPress={resetFilters} color="red" />
-          </View>
-        )}
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+          <TouchableOpacity onPress={openFilterScreen} style={{ marginHorizontal: 5 }}>
+            <Icon name="filter" size={24} color={mode === 'dark' ? '#aaa' : '#999'} />
+          </TouchableOpacity>
+          <TextInput
+            placeholder="Search"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            style={[styles.input, { flex: 1, marginHorizontal: 5 }]}
+            placeholderTextColor={mode === 'dark' ? '#aaa' : '#999'}
+          />
+          <Button title="Search" onPress={handleSearch} color={styles.button.backgroundColor} />
+        </View>
         {isLoading ? (
           <ActivityIndicator animating size="large" />
         ) : isError ? (
           <Text style={styles.error}>Error fetching results</Text>
         ) : displayResults && displayResults.length > 0 ? (
           displayResults.map((product: Product) => (
-            <ProductItem key={product._id} product={product} stockQuantity={product.quantity} onPress={() => navigation.navigate('Product', {slug: product.slug})}/>
+            <ProductItem
+              key={product._id}
+              product={product}
+              onPress={() => navigation.navigate('Product', { productId: product._id })}
+            />
           ))
         ) : (
           <Text style={styles.noResults}>No results found</Text>
@@ -318,7 +149,4 @@ function SearchPage() {
 }
 
 export default SearchPage;
-
-
-
 

@@ -8,7 +8,7 @@ import {
 } from '@react-navigation/native';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {ActivityIndicator} from 'react-native';
-import {createStackNavigator} from '@react-navigation/stack';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {FAB, Provider as PaperProvider} from 'react-native-paper';
@@ -29,7 +29,9 @@ import HomePage from './src/pages/index';
 import SearchPage from './src/pages/SearchPage';
 import MorePage from './src/pages/MorePage';
 import useStore from './src/Store';
-import { headerStyles } from './src/styles';
+import { useHeaderStyles } from './src/styles';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import FilterScreen from './src/components/FilterScreen';
 
 export type RootStackParamList = {
   HomePage: undefined;
@@ -48,13 +50,21 @@ export type RootStackParamList = {
   Order: {orderId: string};
   OrderHistory: undefined;
   Search: {query?: string};
+  FilterScreen: {
+    minPrice?: number;
+    maxPrice?: number;
+    selectedCategories: { id: string; slug: string }[];
+    selectedMaterials: string[];
+    applyFilters: (localMinPrice: number | undefined, localMaxPrice: number | undefined, localSelectedCategories: { id: string; slug: string }[], localSelectedMaterials: string[]) => void;
+    resetFilters: () => void;
+  };
 };
 const queryClient = new QueryClient();
-const HomeStack = createStackNavigator();
+const HomeStack = createNativeStackNavigator();
 function HomeStackNavigator() {
   return (
-    <HomeStack.Navigator screenOptions={{ ...headerStyles }}>
-      <HomeStack.Screen name="HomePage" component={HomePage} options={{ headerTitle: 'Home' }} />
+    <HomeStack.Navigator screenOptions={{ ...useHeaderStyles }}>
+      <HomeStack.Screen name="HomePage" component={HomePage} options={{ headerShown: false }} />
       <HomeStack.Screen name="Product" component={ProductPage} options={{ headerTitle: 'Product Details' }} />
       <HomeStack.Screen name="Products" component={ProductsPage} options={{ headerTitle: 'Products' }} />
       <HomeStack.Screen name="PasswordResetRequest" component={PasswordResetRequest} />
@@ -67,7 +77,7 @@ function HomeStackNavigator() {
       <HomeStack.Screen name="PlaceOrder" component={PlaceOrderPage} />
       <HomeStack.Screen name="Order" component={OrderPage} />
       <HomeStack.Screen name="OrderHistory" component={OrderHistoryPage} />
-      <HomeStack.Screen name="Search" component={SearchPage} />
+      <HomeStack.Screen name="Search" component={SearchPage} options={{ headerShown: false }}/>
       <HomeStack.Screen name="More" component={MorePage} />
     </HomeStack.Navigator>
   );
@@ -130,16 +140,17 @@ function MyTabs() {
     </Tab.Navigator>
   );
 }
-const SearchStack = createStackNavigator();
+const SearchStack = createNativeStackNavigator();
 function SearchStackNavigator() {
   return (
-    <SearchStack.Navigator screenOptions={{ ...headerStyles }}>
-      <SearchStack.Screen name="SearchPage" component={SearchPage} options={{ headerTitle: 'Search' }} />
+    <SearchStack.Navigator screenOptions={{ ...useHeaderStyles }}>
+      <SearchStack.Screen name="SearchPage" component={SearchPage} options={{ headerShown: false }} />
       <SearchStack.Screen name="Product" component={ProductPage} options={{ headerTitle: 'Product Details' }} />
+      <SearchStack.Screen name="FilterScreen" component={FilterScreen} />
     </SearchStack.Navigator>
   );
 }
-const RootStack = createStackNavigator();
+const RootStack = createNativeStackNavigator();
 
 function RootStackNavigator() {
   return (
@@ -166,22 +177,25 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <PaperProvider>
         <NavigationContainer theme={storeMode === 'dark' ? DarkTheme : DefaultTheme}>
-          <RootStackNavigator />
-          <FAB
-            style={{
-              position: 'absolute',
-              margin: 16,
-              right: 0,
-              bottom: 48,
-              backgroundColor: '#005eb8',
-            }}
-            icon="theme-light-dark"
-            color="#fff"
-            onPress={() => store.getState().switchMode()}
-          />
+          <GestureHandlerRootView style={{ flex: 1 }}>
+            <RootStackNavigator />
+            <FAB
+              style={{
+                position: 'absolute',
+                margin: 16,
+                right: 0,
+                bottom: 48,
+                backgroundColor: '#005eb8',
+              }}
+              icon="theme-light-dark"
+              color="#fff"
+              onPress={() => store.getState().switchMode()}
+            />
+          </GestureHandlerRootView>
         </NavigationContainer>
       </PaperProvider>
     </QueryClientProvider>
   );
 }
 export default App;
+

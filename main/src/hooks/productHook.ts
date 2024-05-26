@@ -72,14 +72,6 @@ export const useGetProductDetailsBySlugQuery = (slug: string) =>
       const productDetails = (
         await apiClient.get<Product>(`api/products/slug/${slug}`)
       ).data;
-      console.log(
-        `Fetched product details for slug: ${slug} with URLimage:`,
-        productDetails.URLimages,
-      );
-      console.log(
-        `Product details fetched successfully for slug: ${slug}:`,
-        productDetails,
-      );
 
       const stocks = (await apiClient.get('api/stocks')).data;
       const productStock = stocks.find(
@@ -108,8 +100,13 @@ export const useGetUniqueMaterialsQuery = (): UseQueryResult<
 export const useGetSimilarProductsQuery = (categoryId: string, productId: string) => useQuery({
     queryKey: ['similarProducts', categoryId, productId],
     queryFn: async () => {
-      const { data } = await apiClient.get(`/api/products/similar/${categoryId}/${productId}`);
-      return data;
+      try {
+        const { data } = await apiClient.get(`/api/products/similar/${categoryId}/${productId}`);
+        return data;
+      } catch (error) {
+        console.error('Error fetching similar products:', error);
+        throw error;
+      }
     }
   });
 

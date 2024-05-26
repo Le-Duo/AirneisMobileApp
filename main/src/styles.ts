@@ -1,20 +1,24 @@
 import useStore from './Store';
 import { ImageResizeMode, ImageStyle } from 'react-native';
 
-export const headerStyles = {
-  headerStyle: {
-    backgroundColor: '#f8f9fa',
-    elevation: 0,
-    shadowOpacity: 0,
-    borderBottomWidth: 0,
-    height: 30,
-  },
-  headerTintColor: '#005eb8',
-  headerTitleStyle: {
-    fontWeight: 'bold' as 'bold',
-    fontSize: 18,
-  },
-  headerTitleAlign: 'center' as 'center',
+export const useHeaderStyles = () => {
+  const { mode } = useStore(state => ({ mode: state.mode }));
+  return {
+    headerStyle: {
+      backgroundColor: mode === 'dark' ? '#333' : '#f8f9fa',
+      elevation: 0,
+      shadowOpacity: 0,
+      borderBottomWidth: 0,
+      height: 30,
+      borderRadius: 15, // Added border radius
+    },
+    headerTintColor: mode === 'dark' ? '#fff' : '#212529',
+    headerTitleStyle: {
+      fontWeight: 'bold' as 'bold',
+      fontSize: 18,
+    },
+    headerTitleAlign: 'center' as 'center',
+  };
 };
 
 export const useGetStyles = () => {
@@ -25,25 +29,30 @@ export const useGetStyles = () => {
       flex: 1,
       padding: 10,
       backgroundColor: mode === 'dark' ? '#333' : '#fff',
+      borderRadius: 10, // Added border radius
     },
     cartItem: {
       flex: 1,
       padding: 10,
       backgroundColor: mode === 'dark' ? '#fff' : '#333',
+      borderRadius: 10, // Added border radius
     },
     cartItemImage: {
       width: 100,
       height: 100,
+      borderRadius: 10,
     },
     cartItemDetail: {
       flex: 1,
       padding: 10,
       backgroundColor: mode === 'dark' ? '#fff' : '#333',
+      borderRadius: 10, // Added border radius
     },
     cartSummary: {
       flex: 1,
       padding: 10,
       backgroundColor: mode === 'dark' ? '#fff' : '#333',
+      borderRadius: 10, // Added border radius
     },
     title: {
       fontSize: 20,
@@ -56,7 +65,7 @@ export const useGetStyles = () => {
       padding: 10,
       margin: 5,
       backgroundColor: '#005eb8',
-      borderRadius: 5,
+      borderRadius: 10,
     },
     input: {
       padding: 10,
@@ -65,11 +74,12 @@ export const useGetStyles = () => {
       borderWidth: 1,
       backgroundColor: mode === 'dark' ? '#333' : '#fff',
       color: mode === 'dark' ? '#fff' : '#000',
+      borderRadius: 10, // Added border radius
     },
     label: {
       fontSize: 16,
       fontWeight: 'bold' as 'bold',
-      color: mode === 'dark' ? '#000' : '#fff',
+      color: mode === 'dark' ? '#212529' : '#fff',
     },
     activityIndicator: {
       margin: 5,
@@ -81,6 +91,7 @@ export const useGetStyles = () => {
       padding: 10,
       margin: 5,
       backgroundColor: mode === 'dark' ? '#fff' : '#333',
+      borderRadius: 10, // Added border radius
     },
     filterItem: {
       flex: 1,
@@ -89,7 +100,7 @@ export const useGetStyles = () => {
       padding: 10,
       margin: 5,
       backgroundColor: mode === 'dark' ? '#333' : '#fff',
-      borderRadius: 5,
+      borderRadius: 10,
       borderWidth: 1,
     },
     filterText: {
@@ -102,31 +113,35 @@ export const useGetStyles = () => {
       padding: 10,
       margin: 5,
       backgroundColor: mode === 'dark' ? '#fff' : '#333',
+      borderRadius: 10, // Added border radius
     },
     productItem: {
       padding: 10,
       margin: 5,
       backgroundColor: mode === 'dark' ? '#fff' : '#333',
+      borderRadius: 10, // Added border radius
     },
     noResults: {
       fontSize: 16,
       fontWeight: 'bold' as 'bold',
-      color: mode === 'dark' ? '#000' : '#fff',
+      color: mode === 'dark' ? '#212529' : '#fff',
     },
     enhancedContainer: {
       flex: 1,
       padding: 16,
       backgroundColor: mode === 'dark' ? '#fff' : '#333',
+      borderRadius: 10, // Added border radius
     },
     filterContainer: {
       flex: 1,
       padding: 16,
       backgroundColor: mode === 'dark' ? '#333' : '#fff',
+      borderRadius: 10, // Added border radius
     },
     card: {
       borderWidth: 1,
       borderColor: '#005eb8',
-      borderRadius: 5,
+      borderRadius: 10,
       overflow: 'hidden' as 'hidden',
       margin: 10,
       backgroundColor: mode === 'dark' ? '#333' : '#fff',
@@ -146,9 +161,11 @@ export const useGetStyles = () => {
     },
     productImage: {
       width: '100%',
-      height: 200,
+      height: '100%',
       resizeMode: 'cover',
-
+      margin: 0,
+      padding: 0,
+      borderRadius: 10,
     },
     cardBody: {
       padding: 10,
@@ -157,7 +174,7 @@ export const useGetStyles = () => {
       backgroundColor: '#aaa',
       padding: 10,
       marginTop: 10,
-      borderRadius: 5,
+      borderRadius: 10,
     },
     image: {
       width: '100%' as ImageStyle['width'],
@@ -181,15 +198,14 @@ export const useGetStyles = () => {
     outOfStockButton: {
       backgroundColor: '#aaa',
       padding: 10,
-      borderRadius: 5,
+      borderRadius: 10,
     },
     addToCartButton: {
       backgroundColor: '#005eb8',
       padding: 10,
-      borderRadius: 5,
+      borderRadius: 10,
     },
     imageContainer: {
-      //positions possible : absolute, relative, fixed
       position: 'relative',
       width: '100%',
       height: 200,
@@ -227,7 +243,7 @@ export const useGetStyles = () => {
       padding: 10,
       marginTop: 10,
       backgroundColor: '#005eb8',
-      borderRadius: 5,
+      borderRadius: 10,
     },
     toggleLabel: {
       fontSize: 18,
@@ -236,6 +252,5 @@ export const useGetStyles = () => {
     },
   };
 
-  return { styles, mode, headerStyles };
+  return { styles, mode };
 };
-

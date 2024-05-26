@@ -49,14 +49,13 @@ function ProductItem({
     <TouchableOpacity onPress={onPress} style={[styles.card, style]}>
       <Image
         source={{
-          uri:
-            'https://airneisstaticassets.onrender.com' +
-            product.URLimages[0].replace('../public', '') ||
-            '/assets/images/no-image.png',
+          uri: product.URLimages[0]
+            ? `https://airneisstaticassets.onrender.com${product.URLimages[0].replace('../public', '')}`
+            : '/assets/images/no-image.png',
         }}
         style={styles.image}
       />
-      <View style={{ padding: 10 }}>
+      <View style={{ padding: 10, borderRadius: 10 }}>
         <Text style={styles.text}>{product.name}</Text>
         <Text style={styles.priceText}>£{product.price}</Text>
         {actualStock === 0 ? (
