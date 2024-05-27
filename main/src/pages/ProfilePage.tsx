@@ -12,7 +12,7 @@ import {getError} from '../utils';
 import {ApiError} from '../types/APIError';
 import {useGetUserByIdQuery, useUpdateUserMutation} from '../hooks/userHook';
 import useStore from '../Store';
-import {useGetStyles} from '../styles'; // Import useGetStyles
+import {useGetStyles} from '../styles';
 
 export default function ProfilePage() {
   const [userConnectedID, setUserConnectedID] = useState('');
@@ -44,7 +44,7 @@ export default function ProfilePage() {
   }, [user]);
 
   const userSignOut = useStore(state => state.userSignOut);
-  const styles = useGetStyles();
+  const {styles} = useGetStyles();
 
   if (isLoading) {
     return <ActivityIndicator size="large" />;

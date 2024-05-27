@@ -93,7 +93,7 @@ export default function OrderPage() {
             <TouchableOpacity
               key={item._id}
               onPress={() =>
-                navigation.navigate('Product', {productId: item.slug})
+                navigation.navigate('Product', {slug: item.slug})
               }>
               <Image
                 source={{

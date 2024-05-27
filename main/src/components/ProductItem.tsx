@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   View,
   Text,
@@ -11,6 +12,15 @@ import { CartItem } from '../types/Cart';
 import { Product } from '../types/Product';
 import { ConvertProductToCartItem } from '../utils';
 import { useGetStyles } from '../styles';
+
+function formatImageUrl(imageUrl: string): string {
+  const baseUrl = 'https://airneisstaticassets.onrender.com';
+  if (imageUrl.startsWith('../public')) {
+    return `${baseUrl}${imageUrl.replace('../public', '')}`;
+  } else {
+    return `${baseUrl}/${imageUrl}`;
+  }
+}
 
 function ProductItem({
   product,
@@ -47,14 +57,35 @@ function ProductItem({
 
   return (
     <TouchableOpacity onPress={onPress} style={[styles.card, style]}>
-      <Image
-        source={{
-          uri: product.URLimages[0]
-            ? `https://airneisstaticassets.onrender.com${product.URLimages[0].replace('../public', '')}`
-            : '/assets/images/no-image.png',
-        }}
-        style={styles.image}
-      />
+      {actualStock === 0 ? (
+        <React.Fragment>
+          <Image
+            source={{
+              uri: product.URLimages[0]
+                ? formatImageUrl(product.URLimages[0])
+                : '/assets/images/no-image.png',
+            }}
+            style={[styles.image, { tintColor: 'gray' }]}
+          />
+          <Image
+            source={{
+              uri: product.URLimages[0]
+                ? formatImageUrl(product.URLimages[0])
+                : '/assets/images/no-image.png',
+            }}
+            style={[styles.image, { position: 'absolute', opacity: 0.3 }]}
+          />
+        </React.Fragment>
+      ) : (
+        <Image
+          source={{
+            uri: product.URLimages[0]
+              ? formatImageUrl(product.URLimages[0])
+              : '/assets/images/no-image.png',
+          }}
+          style={styles.image}
+        />
+      )}
       <View style={{ padding: 10, borderRadius: 10 }}>
         <Text style={styles.text}>{product.name}</Text>
         <Text style={styles.priceText}>£{product.price}</Text>

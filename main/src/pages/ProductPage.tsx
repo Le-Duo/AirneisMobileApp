@@ -1,26 +1,42 @@
-import { View, Text, Button, ScrollView, Dimensions, Image, ToastAndroid, StyleSheet } from 'react-native';
-import { useRoute, useNavigation, NavigationProp } from '@react-navigation/native';
+import {
+  View,
+  Text,
+  Button,
+  ScrollView,
+  Dimensions,
+  Image,
+  ToastAndroid,
+  StyleSheet,
+} from 'react-native';
+import {
+  useRoute,
+  useNavigation,
+  NavigationProp,
+} from '@react-navigation/native';
 import Carousel from 'react-native-snap-carousel-v4';
 import LoadingBox from '../components/LoadingBox';
 import MessageBox from '../components/MessageBox';
-import { useGetProductDetailsBySlugQuery } from '../hooks/productHook';
-import { ApiError } from '../types/APIError';
-import { getError } from '../utils';
-import { useStore } from 'zustand';
+import {useGetProductDetailsBySlugQuery} from '../hooks/productHook';
+import {ApiError} from '../types/APIError';
+import {getError} from '../utils';
+import {useStore} from 'zustand';
 import store from '../Store';
-import { ConvertProductToCartItem } from '../utils';
-import { Product } from '../types/Product';
-import { useGetStyles } from '../styles';
-import { useGetSimilarProductsQuery } from '../hooks/productHook';
+import {ConvertProductToCartItem} from '../utils';
+import {Product} from '../types/Product';
+import {useGetStyles} from '../styles';
+import {useGetSimilarProductsQuery} from '../hooks/productHook';
 import ProductItem from '../components/ProductItem';
-import { RootStackParamList } from '../../App';
+import {RootStackParamList} from '../../App';
+import {useEffect, useState} from 'react';
+import apiClient from '../apiClient';
+import { Stock } from '../types/Stock';
 
 export default function ProductPage() {
   interface RouteParams {
     slug: string;
   }
 
-  const { mode } = useGetStyles();
+  const {mode} = useGetStyles();
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
@@ -68,19 +84,63 @@ export default function ProductPage() {
   const route = useRoute();
   const params = route.params as RouteParams | undefined;
 
-  const { slug } = params || {};
-  const { data: product, isLoading, error } = useGetProductDetailsBySlugQuery(slug || '');
+  const {slug} = params || {};
+  const {
+    data: product,
+    isLoading,
+    error,
+  } = useGetProductDetailsBySlugQuery(slug || '');
   const categoryId = product?.category?._id || '';
   const productId = product?._id || '';
-  const { data: similarProducts = [] } = useGetSimilarProductsQuery(categoryId, productId);
+  const {data: similarProducts = [], error: similarProductsError} =
+    useGetSimilarProductsQuery(categoryId, productId, {
+      enabled: !!categoryId && !!productId,
+    });
 
-  const { cart, cartAddItem } = useStore(store, state => ({
+  useEffect(() => {
+    if (similarProductsError) {
+      console.error('Failed to fetch similar products:', similarProductsError);
+    }
+  }, [similarProductsError]);
+
+  useEffect(() => {
+    console.log('Using category ID:', categoryId, 'and product ID:', productId);
+  }, [categoryId, productId]);
+
+  useEffect(() => {
+    console.log('Query enabled:', !!product && !!categoryId && !!productId);
+  }, [product, categoryId, productId]);
+
+  const {cart, cartAddItem} = useStore(store, state => ({
     cart: state.cart,
     cartAddItem: state.cartAddItem,
   }));
 
+  const [stockData, setStockData] = useState<Record<string, Stock | undefined>>({}); // Moved outside any conditional logic
+
+  useEffect(() => {
+    if (similarProducts.length > 0) {
+      const fetchStockData = async () => {
+        const stockResponses = await Promise.all(similarProducts.map((product: Product) => 
+          apiClient.get(`api/stocks/products/${product._id}`)
+        ));
+        const stockData = stockResponses.reduce((acc, response, index) => {
+          acc[similarProducts[index]._id] = response.data;
+          return acc;
+        }, {});
+        setStockData(stockData);
+      };
+
+      fetchStockData();
+    }
+  }, [similarProducts]); // This useEffect is now unconditional
+
   if (!params) {
-    return <MessageBox variant="danger"><Text>No product slug provided</Text></MessageBox>;
+    return (
+      <MessageBox variant="danger">
+        <Text>No product slug provided</Text>
+      </MessageBox>
+    );
   }
 
   const addToCartHandler = async () => {
@@ -101,10 +161,10 @@ export default function ProductPage() {
     ToastAndroid.show('Product added to cart', ToastAndroid.SHORT);
   };
 
-  const renderItem = ({ item }: { item: string }) => {
+  const renderItem = ({item}: {item: string}) => {
     return (
       <View style={styles.imageContainer}>
-        <Image source={{ uri: item }} style={styles.productImage} />
+        <Image source={{uri: item}} style={styles.productImage} />
       </View>
     );
   };
@@ -112,16 +172,26 @@ export default function ProductPage() {
   if (isLoading) {
     return <LoadingBox />;
   } else if (error) {
-    return <MessageBox variant="danger">{getError(error as unknown as ApiError)}</MessageBox>;
+    return (
+      <MessageBox variant="danger">
+        {getError(error as unknown as ApiError)}
+      </MessageBox>
+    );
   } else if (!product) {
-    return <MessageBox variant="danger"><Text>Product Not Found</Text></MessageBox>;
+    return (
+      <MessageBox variant="danger">
+        <Text>Product Not Found</Text>
+      </MessageBox>
+    );
   } else {
     return (
-      <ScrollView style={{ margin: 0, padding: 0 }}>
-        <View style={{ margin: 0, padding: 0 }}>
+      <ScrollView style={{margin: 0, padding: 0}}>
+        <View style={{margin: 0, padding: 0}}>
           <Carousel
             data={product.URLimages.map(
-              image => 'https://airneisstaticassets.onrender.com' + image.replace('../public', ''),
+              image =>
+                'https://airneisstaticassets.onrender.com' +
+                image.replace('../public', ''),
             )}
             renderItem={renderItem}
             sliderWidth={Dimensions.get('window').width}
@@ -131,38 +201,53 @@ export default function ProductPage() {
           <View style={styles.contentContainer}>
             <View style={styles.detailsContainer}>
               <Text style={dynamicStyles.productName}>{product.name}</Text>
-              <Text style={dynamicStyles.productPrice}>{`£${product.price}`}</Text>
+              <Text
+                style={dynamicStyles.productPrice}>{`£${product.price}`}</Text>
             </View>
-            <Text style={dynamicStyles.stockText}>{product.stock > 0 ? 'In Stock' : 'Out of Stock'}</Text>
-            <Button
-              title={product.stock > 0 ? 'ADD TO CART' : 'OUT OF STOCK'}
-              onPress={addToCartHandler}
-              disabled={product.stock === 0}
-              style={styles.cartButton}
-            />
+            <Text style={dynamicStyles.stockText}>
+              {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
+            </Text>
+            <View style={styles.button}>
+              <Button
+                title={product.stock > 0 ? 'ADD TO CART' : 'OUT OF STOCK'}
+                onPress={addToCartHandler}
+                disabled={product.stock === 0}
+              />
+            </View>
             <View style={styles.descriptionContainer}>
               <Text style={dynamicStyles.descriptionTitle}>Description:</Text>
-              <Text style={dynamicStyles.descriptionText}>{product.description}</Text>
+              <Text style={dynamicStyles.descriptionText}>
+                {product.description}
+              </Text>
             </View>
             <View style={styles.materialsContainer}>
               <Text style={dynamicStyles.materialsTitle}>Materials:</Text>
               {product.materials.map((material, index) => (
-                <Text key={index} style={dynamicStyles.materialsText}>{material.trim()}</Text>
+                <Text key={index} style={dynamicStyles.materialsText}>
+                  {material.trim()}
+                </Text>
               ))}
             </View>
-            <View style={styles.similarProductsContainer}>
-              <Text style={dynamicStyles.similarProductsTitle}>SIMILAR PRODUCTS</Text>
-              {similarProducts?.map(similarProduct => {
-                console.log("Similar Product:", similarProduct); // Log each similar product
-                return (
-                  <ProductItem
-                    key={similarProduct._id}
-                    product={similarProduct}
-                    stockQuantity={similarProduct.quantity}
-                    onPress={() => navigation.navigate('Product', { slug: similarProduct.slug })}
-                  />
-                );
-              })}
+            <View>
+              <Text style={dynamicStyles.similarProductsTitle}>
+                SIMILAR PRODUCTS
+              </Text>
+              {similarProducts.map((similarProduct : Product) => (
+                <ProductItem
+                  key={similarProduct._id}
+                  product={similarProduct}
+                  stockQuantity={similarProduct._id ? stockData[similarProduct._id]?.quantity : undefined}
+                  onPress={() => {
+                    if (similarProduct._id) {
+                      navigation.navigate('Product', {
+                        slug: similarProduct.slug,
+                      });
+                    } else {
+                      console.error('Product ID is undefined');
+                    }
+                  }}
+                />
+              ))}
             </View>
           </View>
         </View>
@@ -213,5 +298,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: '#f5f5f5',
   },
+  button: {
+    padding: 10,
+    margin: 5,
+    backgroundColor: '#005eb8',
+    borderRadius: 10,
+  },
 });
-

@@ -1,6 +1,7 @@
 import {useQuery} from '@tanstack/react-query';
 import apiClient from '../apiClient';
 import {Product} from '../types/Product';
+import { Stock } from '../types/Stock';
 
 interface SearchParams {
   searchText?: string;
@@ -13,7 +14,15 @@ interface SearchParams {
   sortOrder?: 'asc' | 'desc';
 }
 
-export const useSearchProducts = ({
+const fetchStocks = async (productIds: string[]) => {
+  const stockPromises = productIds.map(id =>
+    apiClient.get(`/api/stocks/products/${id}`)
+  );
+  const stockResponses = await Promise.all(stockPromises);
+  return stockResponses.map(response => response.data);
+};
+
+export const useSearchProductsAndStock = ({
   searchText,
   minPrice,
   maxPrice,
@@ -33,9 +42,9 @@ export const useSearchProducts = ({
     sortBy,
     sortOrder,
   });
-  return useQuery<Product[], Error>({
+  return useQuery<[Product[], Stock[]], Error>({
     queryKey: [
-      'searchProducts',
+      'searchProductsAndStock',
       {
         searchText,
         minPrice,
@@ -47,22 +56,40 @@ export const useSearchProducts = ({
         sortOrder,
       },
     ],
-    queryFn: () =>
-      apiClient
-        .get('/api/products/search', {
-          params: {
-            searchText,
-            minPrice,
-            maxPrice,
-            categories: categories?.join(','),
-            inStock,
-            materials: materials?.join(','),
-            sortBy,
-            sortOrder,
-          },
-        })
-        .then(res => {
-          return res.data.results;
-        }),
+    queryFn: async () => {
+      console.log('Fetching products with params:', {
+        searchText,
+        minPrice,
+        maxPrice,
+        categories,
+        inStock,
+        materials,
+        sortBy,
+        sortOrder,
+      });
+      const productsResponse = await apiClient.get('/api/products/search', {
+        params: {
+          searchText,
+          minPrice,
+          maxPrice,
+          categories: categories?.join(','),
+          inStock,
+          materials: materials?.join(','),
+          sortBy,
+          sortOrder,
+        },
+      });
+
+      console.log('Products response:', productsResponse.data);
+      const products = productsResponse.data.results;
+      console.log('Products:', products);
+      const productIds = products.map((product: Product) => product._id);
+      console.log('Product IDs:', productIds);
+      const stocks = await fetchStocks(productIds);
+
+      console.log('Stocks response:', stocks);
+      return [products, stocks];
+    },
   });
 };
+

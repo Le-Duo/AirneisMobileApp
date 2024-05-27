@@ -2,7 +2,7 @@ import {Text, Image, View} from 'react-native';
 import LoadingBox from '../components/LoadingBox';
 import MessageBox from '../components/MessageBox';
 import ProductItem from '../components/ProductItem';
-import {useSearchProducts} from '../hooks/searchHook';
+import {useSearchProductsAndStock} from '../hooks/searchHook';
 import {getError} from '../utils';
 import {
   useNavigation,
@@ -32,12 +32,18 @@ export default function ProductsPage() {
   );
 
   const {
-    data: products,
+    data,
     error,
     isLoading,
-  } = useSearchProducts({
+  } = useSearchProductsAndStock({
     categories: categorySlug ? [categorySlug] : undefined,
   });
+
+  const [products] = data || [];
+
+  console.log("Category Slug:", categorySlug);
+  console.log("Category Details:", categoryDetails);
+  console.log("Error:", error);
 
   if (isLoading) {
     return <LoadingBox />;
@@ -57,7 +63,7 @@ export default function ProductsPage() {
           {categoryDetails?.description}
         </Text>
         <View>
-          {products?.map(item => (
+          {products?.map(item  => (
             <ProductItem
               key={item.slug}
               product={item}

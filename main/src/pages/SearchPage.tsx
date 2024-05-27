@@ -1,4 +1,4 @@
-import {useState, useEffect, useMemo} from 'react';
+import {useState, useMemo} from 'react';
 import {
   ScrollView,
   View,
@@ -17,7 +17,7 @@ import {
 
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {Product} from '../types/Product';
-import {useSearchProducts} from '../hooks/searchHook';
+import {useSearchProductsAndStock} from '../hooks/searchHook';
 import {useGetCategoriesQuery} from '../hooks/categoryHook';
 import {useGetUniqueMaterialsQuery} from '../hooks/productHook';
 import ProductItem from '../components/ProductItem';
@@ -51,11 +51,7 @@ function SearchPage() {
   >([]);
   const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
 
-  const {
-    data: displayResults,
-    isLoading,
-    isError,
-  } = useSearchProducts({
+  const {data, isLoading, isError} = useSearchProductsAndStock({
     searchText: searchQuery,
     minPrice: minPrice,
     maxPrice: maxPrice,
@@ -63,26 +59,39 @@ function SearchPage() {
     materials: selectedMaterials,
   });
 
+  const displayResults = data ? data[0] : [];
+  const stocks = data ? data[1] : [];
+
   const {styles, mode} = useGetStyles();
 
-  // Example of fetching categories and materials
-  const { data: categoriesData, isLoading: isLoadingCategories } = useGetCategoriesQuery();
-  const { data: materialsData, isLoading: isLoadingMaterials } = useGetUniqueMaterialsQuery();
+  const {data: categoriesData, isLoading: isLoadingCategories} =
+    useGetCategoriesQuery();
+  const {data: materialsData, isLoading: isLoadingMaterials} =
+    useGetUniqueMaterialsQuery();
 
-  // Ensure data is set in state variables and passed to FilterScreen
   const openFilterScreen = () => {
-    if (!isLoadingCategories && !isLoadingMaterials && categoriesData && materialsData) {
+    if (
+      !isLoadingCategories &&
+      !isLoadingMaterials &&
+      categoriesData &&
+      materialsData
+    ) {
       navigation.navigate('FilterScreen', {
         minPrice,
         maxPrice,
-        selectedCategories,
+        selectedCategories: selectedCategories.map(cat => ({ _id: cat.id, slug: cat.slug })),
         selectedMaterials,
         categories: categoriesData,
         materials: materialsData,
-        applyFilters: (localMinPrice, localMaxPrice, localSelectedCategories, localSelectedMaterials) => {
+        applyFilters: (
+          localMinPrice,
+          localMaxPrice,
+          localSelectedCategories,
+          localSelectedMaterials,
+        ) => {
           setMinPrice(localMinPrice);
           setMaxPrice(localMaxPrice);
-          setSelectedCategories(localSelectedCategories);
+          setSelectedCategories(localSelectedCategories.map(cat => ({ id: cat._id, slug: cat.slug })));
           setSelectedMaterials(localSelectedMaterials);
         },
         resetFilters: () => {
@@ -91,11 +100,10 @@ function SearchPage() {
           setMaxPrice(undefined);
           setSelectedCategories([]);
           setSelectedMaterials([]);
-        }
+        },
       });
     } else {
-      // Handle loading or error state
-      console.error("Data is still loading or not available.");
+      console.error('Data is still loading or not available.');
     }
   };
 
@@ -104,42 +112,70 @@ function SearchPage() {
     navigation.navigate('Search', {
       query: new URLSearchParams({
         query: searchQuery,
-        minPrice: minPrice?.toString(),
-        maxPrice: maxPrice?.toString(),
+        ...(minPrice !== undefined ? { minPrice: minPrice.toString() } : {}),
+        ...(maxPrice !== undefined ? { maxPrice: maxPrice.toString() } : {}),
         categories: selectedCategories.map(cat => cat.slug).join(','),
         materials: selectedMaterials.join(','),
-      }).toString()
+      }).toString(),
     });
   };
 
   return (
     <ScrollView>
       <View style={styles.container}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-          <TouchableOpacity onPress={openFilterScreen} style={{ marginHorizontal: 5 }}>
-            <Icon name="filter" size={24} color={mode === 'dark' ? '#aaa' : '#999'} />
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          <TouchableOpacity
+            onPress={openFilterScreen}
+            style={{marginHorizontal: 5}}>
+            <Icon
+              name="filter"
+              size={24}
+              color={mode === 'dark' ? '#aaa' : '#999'}
+            />
           </TouchableOpacity>
           <TextInput
             placeholder="Search"
             value={searchQuery}
             onChangeText={setSearchQuery}
-            style={[styles.input, { flex: 1, marginHorizontal: 5 }]}
+            style={[styles.input, {flex: 1, marginHorizontal: 5}]}
             placeholderTextColor={mode === 'dark' ? '#aaa' : '#999'}
           />
-          <Button title="Search" onPress={handleSearch} color={styles.button.backgroundColor} />
+          <Button
+            title="Search"
+            onPress={handleSearch}
+            color={styles.button.backgroundColor}
+          />
         </View>
         {isLoading ? (
           <ActivityIndicator animating size="large" />
         ) : isError ? (
           <Text style={styles.error}>Error fetching results</Text>
-        ) : displayResults && displayResults.length > 0 ? (
-          displayResults.map((product: Product) => (
-            <ProductItem
-              key={product._id}
-              product={product}
-              onPress={() => navigation.navigate('Product', { productId: product._id })}
-            />
-          ))
+        ) : displayResults.length > 0 ? (
+          displayResults.map((product: Product) => {
+            const stockItem = stocks.find(
+              stock => stock.product._id === product._id,
+            );
+            const stockQuantity = stockItem ? stockItem.quantity : 0;
+            return (
+              <ProductItem
+                key={product._id}
+                product={product}
+                stockQuantity={stockQuantity}
+                onPress={() => {
+                  if (product.slug) {
+                    navigation.navigate('Product', {slug: product.slug});
+                  } else {
+                    console.error('Product ID is undefined');
+                  }
+                }}
+              />
+            );
+          })
         ) : (
           <Text style={styles.noResults}>No results found</Text>
         )}
@@ -149,4 +185,3 @@ function SearchPage() {
 }
 
 export default SearchPage;
-

@@ -32,10 +32,11 @@ import useStore from './src/Store';
 import { useHeaderStyles } from './src/styles';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import FilterScreen from './src/components/FilterScreen';
+import { Category } from './src/types/Category';
 
 export type RootStackParamList = {
   HomePage: undefined;
-  Product: {productId: string};
+  Product: {slug: string};
   Products: {category: string};
   PasswordResetRequest: undefined;
   SignIn: {redirect?: string};
@@ -53,10 +54,12 @@ export type RootStackParamList = {
   FilterScreen: {
     minPrice?: number;
     maxPrice?: number;
-    selectedCategories: { id: string; slug: string }[];
+    selectedCategories: { _id: string; slug: string }[];
     selectedMaterials: string[];
-    applyFilters: (localMinPrice: number | undefined, localMaxPrice: number | undefined, localSelectedCategories: { id: string; slug: string }[], localSelectedMaterials: string[]) => void;
+    applyFilters: (localMinPrice: number | undefined, localMaxPrice: number | undefined, localSelectedCategories: { _id: string; slug: string }[], localSelectedMaterials: string[]) => void;
     resetFilters: () => void;
+    categories: Category[];
+    materials: string[];
   };
 };
 const queryClient = new QueryClient();

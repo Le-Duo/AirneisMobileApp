@@ -5,9 +5,10 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
-  Button,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+import type { NavigationProp } from '@react-navigation/native';
+import type { RootStackParamList } from '../../App';
 import {useGetOrderHistoryQuery} from '../hooks/orderHook';
 import {ApiError} from '../types/APIError';
 import {getError} from '../utils';
@@ -15,8 +16,8 @@ import {useState} from 'react';
 import {useGetStyles} from '../styles';
 
 export default function OrderHistoryPage() {
-  const styles = useGetStyles();
-  const navigation = useNavigation();
+  const {styles} = useGetStyles();
+  const navigation = useNavigation<NavigationProp<RootStackParamList, 'OrderHistory'>>();
   const {data: Orders, isLoading, error} = useGetOrderHistoryQuery();
   const [currentPage, setCurrentPage] = useState(1);
   const ordersPerPage = 10;
@@ -84,7 +85,7 @@ export default function OrderHistoryPage() {
                   Paid:{' '}
                   {item.isPaid
                     ? item.paidAt
-                      ? formatDate(item.paidAt)
+                      ? formatDate(item.paidAt instanceof Date ? item.paidAt.toISOString() : item.paidAt)
                       : 'N/A'
                     : 'No'}
                 </Text>
@@ -92,7 +93,7 @@ export default function OrderHistoryPage() {
                   Delivered:{' '}
                   {item.isDelivered
                     ? item.deliveredAt
-                      ? formatDate(item.deliveredAt)
+                      ? formatDate(item.deliveredAt instanceof Date ? item.deliveredAt.toISOString() : item.deliveredAt)
                       : 'N/A'
                     : 'No'}
                 </Text>

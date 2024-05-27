@@ -15,8 +15,6 @@ apiClient.interceptors.request.use(
     if (userInfo) {
       const token = JSON.parse(userInfo).token;
       config.headers.Authorization = `Bearer ${token}`;
-    } else {
-      console.log('No user info found in AsyncStorage');
     }
     return config;
   },

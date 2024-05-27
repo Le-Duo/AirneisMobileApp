@@ -1,11 +1,11 @@
-import {View, Text, Button, ScrollView} from 'react-native';
+import {View, Text, ScrollView, TouchableOpacity} from 'react-native';
 import {useNavigation, NavigationProp} from '@react-navigation/native';
 import useStore from '../Store';
 import {useEffect, useState} from 'react';
 import {useCreateOrderMutation} from '../hooks/orderHook';
 import LoadingBox from '../components/LoadingBox';
 import {RootStackParamList} from '../../App';
-import {useGetStyles} from '../styles'; // Import the useGetStyles hook
+import {useGetStyles} from '../styles';
 
 export default function PlaceOrderPage() {
   const navigation =
@@ -15,7 +15,7 @@ export default function PlaceOrderPage() {
     userInfo: state.userInfo,
     dispatch: state.cartClear,
   }));
-  const styles = useGetStyles(); // Use the hook to get dynamic styles
+  const {styles} = useGetStyles();
 
   const round2 = (num: number) => Math.round(num * 100 + Number.EPSILON) / 100;
 
@@ -89,11 +89,12 @@ export default function PlaceOrderPage() {
           {cart.shippingAddress.street}, {cart.shippingAddress.city},{' '}
           {cart.shippingAddress.postalCode}, {cart.shippingAddress.country}
         </Text>
-        <Button
-          title="Edit"
+        <TouchableOpacity
           onPress={() => navigation.navigate('ShippingAddress')}
           style={styles.button}
-        />
+        >
+          <Text>Edit</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.card}>
@@ -101,11 +102,12 @@ export default function PlaceOrderPage() {
         <Text style={styles.text}>
           <Text style={styles.bold}>Method:</Text> {cart.paymentMethod}
         </Text>
-        <Button
-          title="Edit"
+        <TouchableOpacity
           onPress={() => navigation.navigate('Payment')}
           style={styles.button}
-        />
+        >
+          <Text>Edit</Text>
+        </TouchableOpacity>
       </View>
       <View style={styles.card}>
         <Text style={styles.title}>Items</Text>
@@ -116,11 +118,12 @@ export default function PlaceOrderPage() {
             </Text>
           </View>
         ))}
-        <Button
-          title="Edit"
+        <TouchableOpacity
           onPress={() => navigation.navigate('Cart')}
           style={styles.button}
-        />
+        >
+          <Text>Edit</Text>
+        </TouchableOpacity>
       </View>
       <View style={styles.summary}>
         <Text style={styles.summaryTitle}>Order Summary</Text>
@@ -130,12 +133,13 @@ export default function PlaceOrderPage() {
         </Text>
         <Text style={styles.text}>Tax: £{cart.taxPrice.toFixed(2)}</Text>
         <Text style={styles.text}>Total: £{cart.totalPrice.toFixed(2)}</Text>
-        <Button
-          title="Place Order"
+        <TouchableOpacity
           onPress={placeOrderHandler}
           disabled={cart.cartItems.length === 0 || isLoading}
           style={styles.button}
-        />
+        >
+          <Text>Place Order</Text>
+        </TouchableOpacity>
         {isLoading && <LoadingBox />}
       </View>
     </ScrollView>

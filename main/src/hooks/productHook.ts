@@ -97,7 +97,7 @@ export const useGetUniqueMaterialsQuery = (): UseQueryResult<
     },
   });
 
-export const useGetSimilarProductsQuery = (categoryId: string, productId: string) => useQuery({
+export const useGetSimilarProductsQuery = (categoryId: string, productId: string, options?: { enabled: boolean }) => useQuery({
     queryKey: ['similarProducts', categoryId, productId],
     queryFn: async () => {
       try {
@@ -107,7 +107,8 @@ export const useGetSimilarProductsQuery = (categoryId: string, productId: string
         console.error('Error fetching similar products:', error);
         throw error;
       }
-    }
+    },
+    enabled: options?.enabled
   });
 
 export const useDeleteProductMutation = () => useMutation({

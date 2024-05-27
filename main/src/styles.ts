@@ -10,7 +10,7 @@ export const useHeaderStyles = () => {
       shadowOpacity: 0,
       borderBottomWidth: 0,
       height: 30,
-      borderRadius: 15, // Added border radius
+      borderRadius: 15,
     },
     headerTintColor: mode === 'dark' ? '#fff' : '#212529',
     headerTitleStyle: {
@@ -23,19 +23,18 @@ export const useHeaderStyles = () => {
 
 export const useGetStyles = () => {
   const { mode } = useStore(state => ({ mode: state.mode }));
-  console.log('Current Mode in useGetStyles:', mode);
   const styles = {
     container: {
       flex: 1,
       padding: 10,
       backgroundColor: mode === 'dark' ? '#333' : '#fff',
-      borderRadius: 10, // Added border radius
+      borderRadius: 10,
     },
     cartItem: {
       flex: 1,
       padding: 10,
       backgroundColor: mode === 'dark' ? '#fff' : '#333',
-      borderRadius: 10, // Added border radius
+      borderRadius: 10,
     },
     cartItemImage: {
       width: 100,
@@ -46,13 +45,13 @@ export const useGetStyles = () => {
       flex: 1,
       padding: 10,
       backgroundColor: mode === 'dark' ? '#fff' : '#333',
-      borderRadius: 10, // Added border radius
+      borderRadius: 10,
     },
     cartSummary: {
       flex: 1,
       padding: 10,
       backgroundColor: mode === 'dark' ? '#fff' : '#333',
-      borderRadius: 10, // Added border radius
+      borderRadius: 10,
     },
     title: {
       fontSize: 20,
@@ -74,7 +73,7 @@ export const useGetStyles = () => {
       borderWidth: 1,
       backgroundColor: mode === 'dark' ? '#333' : '#fff',
       color: mode === 'dark' ? '#fff' : '#000',
-      borderRadius: 10, // Added border radius
+      borderRadius: 10,
     },
     label: {
       fontSize: 16,
@@ -85,13 +84,15 @@ export const useGetStyles = () => {
       margin: 5,
     },
     error: {
-      color: 'red',
+      color: 'red' as const,
+      fontSize: 16,
+      textAlign: 'center' as const,
     },
     category: {
       padding: 10,
       margin: 5,
       backgroundColor: mode === 'dark' ? '#fff' : '#333',
-      borderRadius: 10, // Added border radius
+      borderRadius: 10,
     },
     filterItem: {
       flex: 1,
@@ -113,13 +114,13 @@ export const useGetStyles = () => {
       padding: 10,
       margin: 5,
       backgroundColor: mode === 'dark' ? '#fff' : '#333',
-      borderRadius: 10, // Added border radius
+      borderRadius: 10,
     },
     productItem: {
       padding: 10,
       margin: 5,
       backgroundColor: mode === 'dark' ? '#fff' : '#333',
-      borderRadius: 10, // Added border radius
+      borderRadius: 10,
     },
     noResults: {
       fontSize: 16,
@@ -130,13 +131,13 @@ export const useGetStyles = () => {
       flex: 1,
       padding: 16,
       backgroundColor: mode === 'dark' ? '#fff' : '#333',
-      borderRadius: 10, // Added border radius
+      borderRadius: 10,
     },
     filterContainer: {
       flex: 1,
       padding: 16,
       backgroundColor: mode === 'dark' ? '#333' : '#fff',
-      borderRadius: 10, // Added border radius
+      borderRadius: 10,
     },
     card: {
       borderWidth: 1,
@@ -148,7 +149,7 @@ export const useGetStyles = () => {
     },
     cardTitle: {
       fontSize: 18,
-      fontWeight: 'bold',
+      fontWeight: 'bold' as 'bold',
       color: mode === 'dark' ? '#fff' : '#000',
     },
     cardText: {
@@ -181,10 +182,16 @@ export const useGetStyles = () => {
       height: 200,
       resizeMode: 'cover' as ImageResizeMode,
     },
-    categoryImage: {
-      width: '100%',
+    grayscaleImage: {
+      width: '100%' as ImageStyle['width'],
       height: 200,
-      resizeMode: 'cover',
+      resizeMode: 'cover' as ImageResizeMode,
+      tintColor: 'gray',
+    },
+    categoryImage: {
+      width: '100%' as ImageStyle['width'],
+      height: 200,
+      resizeMode: 'cover' as ImageResizeMode,
     },
     text: {
       color: mode === 'dark' ? '#fff' : '#000',
@@ -206,28 +213,28 @@ export const useGetStyles = () => {
       borderRadius: 10,
     },
     imageContainer: {
-      position: 'relative',
-      width: '100%',
+      position: 'relative' as const,
+      width: '100%' as const,
       height: 200,
     },
     imageTitle: {
-      position: 'absolute',
-      width: '100%',
-      textAlign: 'center',
-      top: '50%',
+      position: 'absolute' as const,
+      width: '100%' as const,
+      textAlign: 'center' as const,
+      top: '50%' as const,
       transform: [{ translateY: -20 }],
       fontSize: 40,
-      fontWeight: 'bold',
-      color: '#fff',
-      shadowColor: 'black',
+      fontWeight: 'bold' as 'bold',
+      color: '#fff' as const,
+      shadowColor: 'black' as const,
       shadowOffset: { width: 0, height: 0 },
       shadowOpacity: 0.5,
       shadowRadius: 10,
     },
     pagination: {
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center',
+      flexDirection: 'row' as const,
+      justifyContent: 'center' as const,
+      alignItems: 'center' as const,
     },
     pageItem: {
       margin: 5,
@@ -249,6 +256,35 @@ export const useGetStyles = () => {
       fontSize: 18,
       marginRight: 10,
       color: 'white',
+    },
+    bold: {
+      fontWeight: 'bold' as 'bold',
+    },
+    item: {
+      padding: 10,
+      marginVertical: 5,
+      backgroundColor: mode === 'dark' ? '#fff' : '#333',
+      borderRadius: 10,
+      flexDirection: 'row' as const,
+      justifyContent: 'space-between' as const,
+      alignItems: 'center' as const,
+    },
+    summary: {
+      padding: 20,
+      margin: 10,
+      backgroundColor: mode === 'dark' ? '#333' : '#fff',
+      borderRadius: 10,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.1,
+      shadowRadius: 1.5,
+      elevation: 3,
+    },
+    summaryTitle: {
+      fontSize: 20,
+      fontWeight: 'bold' as 'bold',
+      color: mode === 'dark' ? '#fff' : '#000',
+      marginBottom: 10,
     },
   };
 

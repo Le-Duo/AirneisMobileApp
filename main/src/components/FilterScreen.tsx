@@ -1,18 +1,14 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../App';
 
 type FilterScreenRouteProp = RouteProp<RootStackParamList, 'FilterScreen'>;
 
-interface FilterScreenProps {
-  route: FilterScreenRouteProp;
-}
-
-function FilterScreen({ route }: FilterScreenProps) {
+function FilterScreen() {
   const navigation = useNavigation();
+  const route = useRoute<FilterScreenRouteProp>();
   const {
     applyFilters,
     resetFilters,
@@ -31,10 +27,10 @@ function FilterScreen({ route }: FilterScreenProps) {
   const [showCategories, setShowCategories] = useState(false);
   const [showMaterials, setShowMaterials] = useState(false);
 
-  const toggleCategory = (category: { id: string; slug: string }) => {
-    const index = selectedCategoriesState.findIndex(c => c.id === category.id);
+  const toggleCategory = (category: { _id: string; slug: string }) => {
+    const index = selectedCategoriesState.findIndex(c => c._id === category._id);
     if (index > -1) {
-      setSelectedCategories(selectedCategoriesState.filter(c => c.id !== category.id));
+      setSelectedCategories(selectedCategoriesState.filter(c => c._id !== category._id));
     } else {
       setSelectedCategories([...selectedCategoriesState, category]);
     }
@@ -69,9 +65,9 @@ function FilterScreen({ route }: FilterScreenProps) {
             {showCategories && (
               <View style={styles.list}>
                 {categories.map(category => (
-                  <TouchableOpacity key={category.id} onPress={() => toggleCategory(category)} style={styles.item}>
+                  <TouchableOpacity key={category._id} onPress={() => toggleCategory(category)} style={styles.item}>
                     <Icon
-                      name={selectedCategoriesState.some(c => c.id === category.id) ? 'check-square' : 'square-o'}
+                      name={selectedCategoriesState.some(c => c._id === category._id) ? 'check-square' : 'square-o'}
                       size={24}
                       color="black"
                     />
@@ -148,5 +144,4 @@ const styles = StyleSheet.create({
 });
 
 export default FilterScreen;
-
 

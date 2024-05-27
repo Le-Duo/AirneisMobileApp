@@ -1,14 +1,20 @@
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, NavigationProp} from '@react-navigation/native';
+import { RootStackParamList } from '../../App';
+
+type MenuItem = {
+  title: string;
+  screen: keyof RootStackParamList;
+};
 
 const MorePage = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
-  const menuItems = [
+  const menuItems: MenuItem[] = [
     {title: 'Profile', screen: 'Profile'},
     {title: 'Orders', screen: 'OrderHistory'},
-    {title: 'Settings', screen: 'Settings'},
-    {title: 'Help', screen: 'Help'},
+    // {title: 'Settings', screen: 'Settings'},
+    // {title: 'Help', screen: 'Help'},
   ];
 
   return (
@@ -17,7 +23,9 @@ const MorePage = () => {
         <TouchableOpacity
           key={index}
           style={styles.menuItem}
-          onPress={() => navigation.navigate(item.screen)}>
+          onPress={() => {
+            navigation.navigate(item.screen, {} as any);
+          }}>
           <Text style={styles.menuText}>{item.title}</Text>
         </TouchableOpacity>
       ))}
