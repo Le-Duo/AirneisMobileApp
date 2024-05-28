@@ -14,6 +14,7 @@ import {ApiError} from '../types/APIError';
 import {getError} from '../utils';
 import {useState} from 'react';
 import {useGetStyles} from '../styles';
+import { formatImageUrl } from '../utils';
 
 export default function OrderHistoryPage() {
   const {styles} = useGetStyles();
@@ -70,9 +71,7 @@ export default function OrderHistoryPage() {
                     <Image
                       key={index}
                       source={{
-                        uri:
-                          'https://airneisstaticassets.onrender.com' +
-                          orderItem.image,
+                        uri: formatImageUrl(orderItem.image ?? ''),
                       }}
                       style={[
                         styles.image,

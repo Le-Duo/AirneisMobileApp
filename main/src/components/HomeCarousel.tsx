@@ -11,6 +11,7 @@ import {
 import Carousel, {Pagination} from 'react-native-snap-carousel-v4';
 import {useGetCarouselItemsQuery} from '../hooks/carouselHook';
 import {useGetStyles} from '../styles';
+import { formatImageUrl } from '../utils';
 
 const {width: screenWidth} = Dimensions.get('window');
 
@@ -36,7 +37,7 @@ const HomeCarousel = ({ style }: HomeCarouselProps) => {
     return (
       <View style={styles.carouselItem}>
         <Image
-          source={{uri: 'https://airneisstaticassets.onrender.com' + src}}
+          source={{uri: formatImageUrl(src)}}
           style={styles.image}
         />
         <View style={styles.captionContainer}>

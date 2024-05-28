@@ -13,6 +13,7 @@ import {useGetOrderDetailsQuery} from '../hooks/orderHook';
 import {ApiError} from '../types/APIError';
 import {getError} from '../utils';
 import {RootStackParamList} from '../../App';
+import { formatImageUrl } from '../utils';
 
 export default function OrderPage() {
   const navigation =
@@ -97,7 +98,7 @@ export default function OrderPage() {
               }>
               <Image
                 source={{
-                  uri: 'https://airneisstaticassets.onrender.com' + item.image,
+                  uri: formatImageUrl(item.image ?? ''),
                 }}
                 style={styles.image}
               />

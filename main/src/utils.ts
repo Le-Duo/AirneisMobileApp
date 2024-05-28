@@ -21,3 +21,14 @@ export const ConvertProductToCartItem = (product: Product): CartItem => {
   };
   return cartItem;
 };
+
+export const formatImageUrl = (imageUrl: string): string => {
+  const baseUrl = 'https://airneisstaticassets.onrender.com';
+  if (imageUrl.startsWith('../public')) {
+    return `${baseUrl}${imageUrl.replace('../public', '')}`;
+  } else if (imageUrl.startsWith('/images')) {
+    return `${baseUrl}/${imageUrl}`;
+  } else {
+    return imageUrl;
+  }
+};

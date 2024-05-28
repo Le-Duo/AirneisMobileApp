@@ -1,7 +1,7 @@
 import {
   View,
   Text,
-  Button,
+  TouchableOpacity,
   ScrollView,
   Dimensions,
   Image,
@@ -29,7 +29,8 @@ import ProductItem from '../components/ProductItem';
 import {RootStackParamList} from '../../App';
 import {useEffect, useState} from 'react';
 import apiClient from '../apiClient';
-import { Stock } from '../types/Stock';
+import {Stock} from '../types/Stock';
+import { formatImageUrl } from '../utils';
 
 export default function ProductPage() {
   interface RouteParams {
@@ -116,14 +117,18 @@ export default function ProductPage() {
     cartAddItem: state.cartAddItem,
   }));
 
-  const [stockData, setStockData] = useState<Record<string, Stock | undefined>>({}); // Moved outside any conditional logic
+  const [stockData, setStockData] = useState<Record<string, Stock | undefined>>(
+    {},
+  ); // Moved outside any conditional logic
 
   useEffect(() => {
     if (similarProducts.length > 0) {
       const fetchStockData = async () => {
-        const stockResponses = await Promise.all(similarProducts.map((product: Product) => 
-          apiClient.get(`api/stocks/products/${product._id}`)
-        ));
+        const stockResponses = await Promise.all(
+          similarProducts.map((product: Product) =>
+            apiClient.get(`api/stocks/products/${product._id}`),
+          ),
+        );
         const stockData = stockResponses.reduce((acc, response, index) => {
           acc[similarProducts[index]._id] = response.data;
           return acc;
@@ -134,6 +139,14 @@ export default function ProductPage() {
       fetchStockData();
     }
   }, [similarProducts]); // This useEffect is now unconditional
+
+  // State to manage visibility
+  const [showDescription, setShowDescription] = useState(false);
+  const [showMaterials, setShowMaterials] = useState(false);
+
+  // Toggle functions
+  const toggleDescription = () => setShowDescription(!showDescription);
+  const toggleMaterials = () => setShowMaterials(!showMaterials);
 
   if (!params) {
     return (
@@ -188,11 +201,7 @@ export default function ProductPage() {
       <ScrollView style={{margin: 0, padding: 0}}>
         <View style={{margin: 0, padding: 0}}>
           <Carousel
-            data={product.URLimages.map(
-              image =>
-                'https://airneisstaticassets.onrender.com' +
-                image.replace('../public', ''),
-            )}
+            data={product.URLimages.map(image => formatImageUrl(image))}
             renderItem={renderItem}
             sliderWidth={Dimensions.get('window').width}
             itemWidth={Dimensions.get('window').width}
@@ -205,24 +214,41 @@ export default function ProductPage() {
                 style={dynamicStyles.productPrice}>{`£${product.price}`}</Text>
             </View>
             <Text style={dynamicStyles.stockText}>
-              {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
+              {product.stock > 0 ? 'In Stock : ' + product.stock : 'Out of Stock'}
             </Text>
-            <View style={styles.button}>
-              <Button
-                title={product.stock > 0 ? 'ADD TO CART' : 'OUT OF STOCK'}
-                onPress={addToCartHandler}
-                disabled={product.stock === 0}
-              />
+            <View>
+              {product.stock > 0 ? (
+                <TouchableOpacity
+                  onPress={addToCartHandler}
+                  disabled={product.stock === 0}
+                  style={styles.addToCartButton}
+                >
+                  <Text style={styles.buttonText}>ADD TO CART</Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={styles.outOfStockButton}
+                  disabled={true}
+                >
+                  <Text style={styles.buttonText}>OUT OF STOCK</Text>
+                </TouchableOpacity>
+              )}
             </View>
             <View style={styles.descriptionContainer}>
-              <Text style={dynamicStyles.descriptionTitle}>Description:</Text>
-              <Text style={dynamicStyles.descriptionText}>
-                {product.description}
-              </Text>
+              <TouchableOpacity onPress={toggleDescription}>
+                <Text style={dynamicStyles.descriptionTitle}>Description:</Text>
+              </TouchableOpacity>
+              {showDescription && (
+                <Text style={dynamicStyles.descriptionText}>
+                  {product.description}
+                </Text>
+              )}
             </View>
             <View style={styles.materialsContainer}>
-              <Text style={dynamicStyles.materialsTitle}>Materials:</Text>
-              {product.materials.map((material, index) => (
+              <TouchableOpacity onPress={toggleMaterials}>
+                <Text style={dynamicStyles.materialsTitle}>Materials:</Text>
+              </TouchableOpacity>
+              {showMaterials && product.materials.map((material, index) => (
                 <Text key={index} style={dynamicStyles.materialsText}>
                   {material.trim()}
                 </Text>
@@ -232,11 +258,15 @@ export default function ProductPage() {
               <Text style={dynamicStyles.similarProductsTitle}>
                 SIMILAR PRODUCTS
               </Text>
-              {similarProducts.map((similarProduct : Product) => (
+              {similarProducts.map((similarProduct: Product) => (
                 <ProductItem
                   key={similarProduct._id}
                   product={similarProduct}
-                  stockQuantity={similarProduct._id ? stockData[similarProduct._id]?.quantity : undefined}
+                  stockQuantity={
+                    similarProduct._id
+                      ? stockData[similarProduct._id]?.quantity
+                      : undefined
+                  }
                   onPress={() => {
                     if (similarProduct._id) {
                       navigation.navigate('Product', {
@@ -303,5 +333,19 @@ const styles = StyleSheet.create({
     margin: 5,
     backgroundColor: '#005eb8',
     borderRadius: 10,
+  },
+  outOfStockButton: {
+    backgroundColor: '#aaa',
+    padding: 10,
+    borderRadius: 10,
+  },
+  addToCartButton: {
+    backgroundColor: '#005eb8',
+    padding: 10,
+    borderRadius: 10,
+  },
+  buttonText: {
+    color: '#fff',
+    textAlign: 'center' as const,
   },
 });

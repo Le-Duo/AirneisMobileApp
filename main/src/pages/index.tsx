@@ -20,6 +20,7 @@ import {
 import ProductItem from '../components/ProductItem';
 import HomeCarousel from '../components/HomeCarousel';
 import {RootStackParamList} from '../../App';
+import { formatImageUrl } from '../utils';
 
 export default function HomePage() {
   const [refreshing, setRefreshing] = useState(false);
@@ -100,9 +101,7 @@ export default function HomePage() {
               style={{overflow: 'hidden', margin: 10, borderRadius: 10}}>
               <ImageBackground
                 source={{
-                  uri:
-                    'https://airneisstaticassets.onrender.com' +
-                    category.urlImage.replace('../public', ''),
+                  uri: formatImageUrl(category.urlImage),
                 }}
                 style={{height: 200, justifyContent: 'center'}}>
                 <Text

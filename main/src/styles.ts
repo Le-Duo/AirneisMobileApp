@@ -63,7 +63,7 @@ export const useGetStyles = () => {
     button: {
       padding: 10,
       margin: 5,
-      backgroundColor: '#005eb8',
+      backgroundColor: '#005eb8' as const,
       borderRadius: 10,
     },
     input: {
@@ -96,8 +96,8 @@ export const useGetStyles = () => {
     },
     filterItem: {
       flex: 1,
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
       padding: 10,
       margin: 5,
       backgroundColor: mode === 'dark' ? '#333' : '#fff',
@@ -141,7 +141,7 @@ export const useGetStyles = () => {
     },
     card: {
       borderWidth: 1,
-      borderColor: '#005eb8',
+      borderColor: '#005eb8' as const,
       borderRadius: 10,
       overflow: 'hidden' as 'hidden',
       margin: 10,
@@ -157,13 +157,13 @@ export const useGetStyles = () => {
       color: mode === 'dark' ? '#fff' : '#000',
     },
     buttonText: {
-      color: '#fff',
+      color: '#fff' as const,
       textAlign: 'center' as const,
     },
     productImage: {
-      width: '100%',
-      height: '100%',
-      resizeMode: 'cover',
+      width: '100%' as ImageStyle['width'],
+      height: '100%' as ImageStyle['height'],
+      resizeMode: 'cover' as ImageResizeMode,
       margin: 0,
       padding: 0,
       borderRadius: 10,
@@ -172,7 +172,7 @@ export const useGetStyles = () => {
       padding: 10,
     },
     buttonDisabled: {
-      backgroundColor: '#aaa',
+      backgroundColor: '#aaa' as const,
       padding: 10,
       marginTop: 10,
       borderRadius: 10,
@@ -186,7 +186,7 @@ export const useGetStyles = () => {
       width: '100%' as ImageStyle['width'],
       height: 200,
       resizeMode: 'cover' as ImageResizeMode,
-      tintColor: 'gray',
+      tintColor: 'gray' as const,
     },
     categoryImage: {
       width: '100%' as ImageStyle['width'],
@@ -203,12 +203,12 @@ export const useGetStyles = () => {
       fontWeight: 'bold' as 'bold',
     },
     outOfStockButton: {
-      backgroundColor: '#aaa',
+      backgroundColor: '#aaa' as const,
       padding: 10,
       borderRadius: 10,
     },
     addToCartButton: {
-      backgroundColor: '#005eb8',
+      backgroundColor: '#005eb8' as const,
       padding: 10,
       borderRadius: 10,
     },
@@ -241,7 +241,7 @@ export const useGetStyles = () => {
     },
     pageText: {
       fontSize: 16,
-      color: '#005eb8',
+      color: '#005eb8' as const,
     },
     toggleButton: {
       flexDirection: 'row' as const,
@@ -249,13 +249,13 @@ export const useGetStyles = () => {
       justifyContent: 'space-between' as const,
       padding: 10,
       marginTop: 10,
-      backgroundColor: '#005eb8',
+      backgroundColor: '#005eb8' as const,
       borderRadius: 10,
     },
     toggleLabel: {
       fontSize: 18,
       marginRight: 10,
-      color: 'white',
+      color: 'white' as const,
     },
     bold: {
       fontWeight: 'bold' as 'bold',
@@ -274,7 +274,7 @@ export const useGetStyles = () => {
       margin: 10,
       backgroundColor: mode === 'dark' ? '#333' : '#fff',
       borderRadius: 10,
-      shadowColor: '#000',
+      shadowColor: '#000' as const,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 1.5,
@@ -285,6 +285,66 @@ export const useGetStyles = () => {
       fontWeight: 'bold' as 'bold',
       color: mode === 'dark' ? '#fff' : '#000',
       marginBottom: 10,
+    },
+    cartContainer: {
+      flex: 1,
+      padding: 0,
+      alignItems: 'stretch' as const,
+    },
+    cartHeader: {
+      fontSize: 24,
+      fontWeight: 'bold' as 'bold',
+      color: mode === 'dark' ? '#fff' : '#000',
+    },
+    cartListItem: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      justifyContent: 'space-between' as const,
+      padding: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: '#cccccc' as const,
+    },
+    cartImage: {
+      width: 50,
+      height: 50,
+    },
+    table: {
+      width: '100%' as const,
+      alignItems: 'stretch' as const,
+    },
+    tableRow: {
+      flexDirection: 'row' as const,
+      justifyContent: 'space-between' as const,
+      padding: 10,
+      borderBottomWidth: 1,
+      borderBottomColor: '#cccccc' as const,
+      alignItems: 'center' as const,
+    },
+    tableCell: {
+      flex: 1,
+      justifyContent: 'center' as const,
+      alignItems: 'center' as const,
+      padding: 5,
+      borderWidth: 1,
+      borderColor: '#cccccc' as const,
+      borderStyle: 'solid' as const,
+    },
+    quantityControls: {
+      flexDirection: 'row' as const,
+      alignItems: 'center' as const,
+      justifyContent: 'center' as const,
+    },
+    icon: {
+      color: mode === 'dark' ? '#fff' : '#000',
+    },
+    cartText: {
+      color: mode === 'dark' ? '#fff' : '#000',
+    },
+    scrollView: {
+      width: '100%' as const,
+    },
+    dataTable: {
+      width: '100%' as const,
     },
   };
 

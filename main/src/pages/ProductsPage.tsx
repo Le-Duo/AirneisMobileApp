@@ -3,7 +3,7 @@ import LoadingBox from '../components/LoadingBox';
 import MessageBox from '../components/MessageBox';
 import ProductItem from '../components/ProductItem';
 import {useSearchProductsAndStock} from '../hooks/searchHook';
-import {getError} from '../utils';
+import {getError, formatImageUrl} from '../utils';
 import {
   useNavigation,
   useRoute,
@@ -50,9 +50,7 @@ export default function ProductsPage() {
   } else if (error) {
     return <MessageBox variant="danger">{getError(error as any)}</MessageBox>;
   } else {
-    const imageUrl =
-      'https://airneisstaticassets.onrender.com' +
-      categoryDetails?.urlImage.replace('../public', '').trim();
+    const imageUrl = formatImageUrl(categoryDetails?.urlImage || '');
     return (
       <ScrollView>
         <View style={styles.imageContainer}>

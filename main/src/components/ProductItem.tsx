@@ -12,15 +12,7 @@ import { CartItem } from '../types/Cart';
 import { Product } from '../types/Product';
 import { ConvertProductToCartItem } from '../utils';
 import { useGetStyles } from '../styles';
-
-function formatImageUrl(imageUrl: string): string {
-  const baseUrl = 'https://airneisstaticassets.onrender.com';
-  if (imageUrl.startsWith('../public')) {
-    return `${baseUrl}${imageUrl.replace('../public', '')}`;
-  } else {
-    return `${baseUrl}/${imageUrl}`;
-  }
-}
+import { formatImageUrl } from '../utils';
 
 function ProductItem({
   product,
