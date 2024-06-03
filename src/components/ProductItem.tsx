@@ -36,14 +36,14 @@ function ProductItem({
   const actualStock =
     stockQuantity !== undefined ? stockQuantity : product.stock;
 
-  const addToCartHandler = async (item: CartItem) => {
-    const existItem = cartItems.find(x => x._id === item._id);
+  const addToCartHandler = async (product: Product) => {
+    const existItem = cartItems.find(x => x._id === product._id);
     const quantity = existItem ? existItem.quantity + 1 : 1;
     if (actualStock && actualStock < quantity) {
       ToastAndroid.show('Sorry, Product is out of stock', ToastAndroid.SHORT);
       return;
     }
-    await cartAddItem({ ...item, quantity });
+    await cartAddItem(ConvertProductToCartItem(product, actualStock));
     ToastAndroid.show('Success, Product added to cart', ToastAndroid.SHORT);
   };
 
@@ -88,7 +88,7 @@ function ProductItem({
         ) : (
           <TouchableOpacity
             style={styles.addToCartButton}
-            onPress={() => addToCartHandler(ConvertProductToCartItem(product))}
+            onPress={() => addToCartHandler(product)}
             activeOpacity={0.7}>
             <Text style={styles.buttonText}>Add to Cart</Text>
           </TouchableOpacity>

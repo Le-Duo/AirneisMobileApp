@@ -4,6 +4,7 @@ import {
   StatusBar,
   SafeAreaView,
   Platform,
+  useColorScheme,
 } from "react-native";
 import {
   NavigationContainer,
@@ -12,12 +13,12 @@ import {
 } from "@react-navigation/native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { Provider as PaperProvider, FAB } from "react-native-paper";
+import { Provider as PaperProvider } from "react-native-paper";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Icon from "react-native-vector-icons/FontAwesome";
 import useStore from "./src/Store";
-import { useHeaderStyles } from "./src/styles";
+import { useGetStyles } from "./src/styles";
 import HomePage from "./src/pages/index";
 import ProductPage from "./src/pages/ProductPage";
 import ProductsPage from "./src/pages/ProductsPage";
@@ -35,7 +36,9 @@ import SearchPage from "./src/pages/SearchPage";
 import MorePage from "./src/pages/MorePage";
 import FilterScreen from "./src/components/FilterScreen";
 import { Category } from "./src/types/Category";
-import { FilterProvider } from './src/context/FilterContext';
+import { FilterProvider } from "./src/context/FilterContext";
+import ThemeSettingsPage from "./src/pages/ThemeSettingsPage";
+import { Appearance } from "react-native";
 
 export type RootStackParamList = {
   HomePage: undefined;
@@ -69,6 +72,7 @@ export type RootStackParamList = {
     categories: Category[];
     materials: string[];
   };
+  ThemeSettings: undefined;
 };
 
 const queryClient = new QueryClient();
@@ -76,7 +80,7 @@ const HomeStack = createNativeStackNavigator();
 
 function HomeStackNavigator() {
   return (
-    <HomeStack.Navigator screenOptions={{ ...useHeaderStyles }}>
+    <HomeStack.Navigator screenOptions={{ ...useGetStyles }}>
       <HomeStack.Screen
         name="HomePage"
         component={HomePage}
@@ -100,7 +104,6 @@ function HomeStackNavigator() {
       <HomeStack.Screen name="SignUp" component={SignupPage} />
       <HomeStack.Screen name="Cart" component={CartPage} />
       <HomeStack.Screen name="Profile" component={ProfilePage} />
-      <HomeStack.Screen name="Payment" component={PaymentMethodPage} />
       <HomeStack.Screen
         name="ShippingAddress"
         component={ShippingAddressPage}
@@ -193,7 +196,7 @@ const SearchStack = createNativeStackNavigator();
 
 function SearchStackNavigator() {
   return (
-    <SearchStack.Navigator screenOptions={{ ...useHeaderStyles }}>
+    <SearchStack.Navigator screenOptions={{ ...useGetStyles }}>
       <SearchStack.Screen
         name="SearchPage"
         component={SearchPage}
@@ -220,6 +223,7 @@ function RootStackNavigator() {
         options={{ headerShown: false }}
       />
       <RootStack.Screen name="Product" component={ProductPage} />
+      <RootStack.Screen name="ThemeSettings" component={ThemeSettingsPage} />
     </RootStack.Navigator>
   );
 }
@@ -234,13 +238,31 @@ const CustomDarkTheme = {
   },
 };
 
+const getTheme = (mode: string) => {
+  const colorScheme = Appearance.getColorScheme();
+  console.log('colorScheme:', colorScheme);
+  if (mode === "system") {
+    return colorScheme === "dark" ? CustomDarkTheme : NavigationDefaultTheme;
+  } else {
+    return mode === "dark" ? CustomDarkTheme : NavigationDefaultTheme;
+  }
+};
+
 export default function App() {
   const storeMode = useStore((state) => state.mode);
+  const [theme, setTheme] = useState(getTheme(storeMode));
+
+  useEffect(() => {
+    setTheme(getTheme(storeMode));
+  }, [storeMode]);
+
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const bootstrapAsync = async () => {
+      console.log("Starting app initialization");
       setIsLoading(false);
+      console.log("App initialization complete");
     };
     bootstrapAsync();
   }, []);
@@ -253,12 +275,8 @@ export default function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <PaperProvider>
-        <NavigationContainer
-          theme={
-            storeMode === "dark" ? CustomDarkTheme : NavigationDefaultTheme
-          }
-        >
+      <PaperProvider theme={theme}>
+        <NavigationContainer theme={theme}>
           <FilterProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>
               <StatusBar
@@ -269,23 +287,11 @@ export default function App() {
               <SafeAreaView
                 style={{
                   flex: 1,
-                  backgroundColor: "#212529",
+                  backgroundColor: theme.colors.background,
                   paddingTop: Platform.OS === "android" ? statusBarHeight : 0,
                 }}
               >
                 <RootStackNavigator />
-                <FAB
-                  style={{
-                    position: "absolute",
-                    margin: 16,
-                    right: 0,
-                    bottom: 48,
-                    backgroundColor: "#005eb8",
-                  }}
-                  icon="theme-light-dark"
-                  color="#fff"
-                  onPress={() => useStore.getState().switchMode()}
-                />
               </SafeAreaView>
             </GestureHandlerRootView>
           </FilterProvider>
@@ -294,4 +300,3 @@ export default function App() {
     </QueryClientProvider>
   );
 }
-

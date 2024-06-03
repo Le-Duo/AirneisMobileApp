@@ -125,7 +125,7 @@ function SearchPage() {
 
   return (
     <ScrollView>
-      <View style={styles.container}>
+      <View>
         <View
           style={{
             flexDirection: "row",

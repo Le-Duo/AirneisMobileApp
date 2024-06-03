@@ -26,9 +26,47 @@ export const useGetStyles = () => {
   const styles = {
     container: {
       flex: 1,
-      padding: 10,
+      padding: 20,
       backgroundColor: mode === 'dark' ? '#212529' : '#fff',
       borderRadius: 10,
+      justifyContent: 'center' as 'center',
+      alignItems: 'center' as 'center',
+    },
+    menuItem: {
+      flexDirection: 'row' as 'row', 
+      alignItems: 'center' as 'center', 
+      padding: 15,
+      marginVertical: 10,
+      backgroundColor: '#005eb8' as const,
+      width: '80%' as const,
+      borderRadius: 5,
+    },
+    menuIcon: {
+      marginRight: 10,
+    },
+    menuText: {
+      color: '#fff' as const,
+      fontSize: 18,
+      fontWeight: 'bold' as 'bold',
+      textAlign: 'center' as const,
+    },
+    title: {
+      fontSize: 24,
+      fontWeight: 'bold' as 'bold',
+      marginBottom: 20,
+      color: mode === 'dark' ? '#fff' : '#212529',
+    },
+    radioContainer: {
+      width: '100%',
+    },
+    radioItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginVertical: 10,
+    },
+    radioText: {
+      fontSize: 18,
+      color: mode === 'dark' ? '#fff' : '#212529',
     },
     cartItem: {
       flex: 1,
@@ -52,13 +90,6 @@ export const useGetStyles = () => {
       padding: 10,
       backgroundColor: mode === 'dark' ? '#fff' : '#212529',
       borderRadius: 10,
-    },
-    title: {
-      fontSize: 20,
-      fontWeight: 'bold' as 'bold',
-      color: mode === 'dark' ? '#fff' : '#212529',
-      textAlign: 'center' as const,
-      textTransform: 'uppercase' as const,
     },
     button: {
       padding: 10,
@@ -374,7 +405,25 @@ export const useGetStyles = () => {
       flexDirection: 'row' as const,
       flexWrap: 'wrap' as const,
     },
+    tableHeaderText: {
+      fontWeight: 'bold' as 'bold',
+      fontSize: 16,
+      color: mode === 'dark' ? '#fff' : '#212529',
+      textAlign: 'center' as const,
+    },
+    totalPriceContainer: {
+      padding: 10,
+      margin: 10,
+      backgroundColor: mode === 'dark' ? '#212529' : '#fff',
+      borderRadius: 10,
+      alignItems: 'center' as const,
+    },
+    totalPriceText: {
+      fontSize: 18,
+      fontWeight: 'bold' as 'bold',
+      color: mode === 'dark' ? '#fff' : '#212529',
+    },
   };
 
   return { styles, mode };
-};
+}

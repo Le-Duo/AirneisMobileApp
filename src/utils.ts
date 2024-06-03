@@ -8,14 +8,14 @@ export const getError = (error: ApiError) => {
     : error.message;
 };
 
-export const ConvertProductToCartItem = (product: Product): CartItem => {
+export const ConvertProductToCartItem = (product: Product, stock?: number): CartItem => {
   const cartItem: CartItem = {
     _id: product._id || '',
     name: product.name,
     slug: product.slug,
     image: product.URLimages[0],
     price: product.price || 0,
-    stock: product.stock || 0,
+    stock: stock !== undefined ? stock : product.stock || 0,
     quantity: 1,
     category: product.category,
   };

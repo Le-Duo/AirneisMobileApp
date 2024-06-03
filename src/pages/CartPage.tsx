@@ -5,6 +5,7 @@ import {
   Image,
   ToastAndroid,
   ScrollView,
+  FlatList,
 } from 'react-native';
 import {useNavigation, NavigationProp} from '@react-navigation/native';
 import {useStore} from 'zustand';
@@ -15,7 +16,6 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import {RootStackParamList} from '../../App';
 import { formatImageUrl } from '../utils';
 import { useGetStyles } from '../styles';
-import { Table, Rows } from 'react-native-table-component';
 
 export default function CartPage() {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -36,20 +36,15 @@ export default function CartPage() {
 
   const updateCartHandler = (
     cartItem: CartItem,
-    quantity: CartItem['quantity'],
+    quantity: number,
   ) => {
     console.log('Updating cart item:', cartItem);
-    console.log(
-      'Current stock quantity:',
-      cartItem.stock,
-      'Requested quantity:',
-      quantity,
-    );
-    if (cartItem.stock < quantity) {
-      ToastAndroid.show('Sorry. Product is out of stock', ToastAndroid.SHORT);
+    console.log('Current stock:', cartItem.stock, 'Requested quantity:', quantity);
+    if (quantity > cartItem.stock) {
+      ToastAndroid.show('Cannot exceed available stock', ToastAndroid.SHORT);
       return;
     }
-    cartAddItem({...cartItem, quantity});
+    cartAddItem({ ...cartItem, quantity });
   };
 
   const checkoutHandler = () => {
@@ -64,25 +59,29 @@ export default function CartPage() {
     cartRemoveItem(item);
   };
 
-  const tableData = cartItems.map((item) => [
-    <TouchableOpacity onPress={() => navigation.navigate('Product', {slug: item.slug})}>
-      <Image source={{ uri: formatImageUrl(item.image ?? '') }} style={styles.cartImage} />
-    </TouchableOpacity>,
-    <Text style={styles.text}>{item.name}</Text>,
-    <View style={styles.quantityControls}>
-      <TouchableOpacity onPress={() => updateCartHandler(item, item.quantity - 1)} disabled={item.quantity === 1}>
-        <Icon name="minus" style={styles.icon} />
+  const renderItem = ({ item }: { item: CartItem }) => (
+    <View style={styles.cartListItem}>
+      <TouchableOpacity onPress={() => navigation.navigate('Product', {slug: item.slug})}>
+        <Image source={{ uri: formatImageUrl(item.image ?? '') }} style={styles.cartImage} />
       </TouchableOpacity>
-      <Text style={styles.text}>{item.quantity}</Text>
-      <TouchableOpacity onPress={() => updateCartHandler(item, item.quantity + 1)} disabled={item.quantity === item.stock}>
-        <Icon name="plus" style={styles.icon} />
+      <Text style={styles.text}>{item.name}</Text>
+      <View style={styles.quantityControls}>
+        <TouchableOpacity onPress={() => updateCartHandler(item, item.quantity - 1)} disabled={item.quantity === 1}>
+          <Icon name="minus" style={styles.icon} />
+        </TouchableOpacity>
+        <Text style={styles.text}>{item.quantity}</Text>
+        <TouchableOpacity onPress={() => updateCartHandler(item, item.quantity + 1)} disabled={item.quantity >= item.stock}>
+          <Icon name="plus" style={styles.icon} />
+        </TouchableOpacity>
+      </View>
+      <Text style={styles.text}>£{item.price}</Text>
+      <TouchableOpacity onPress={() => removeItemHandler(item)}>
+        <Icon name="trash" size={24} style={styles.icon} />
       </TouchableOpacity>
-    </View>,
-    <Text style={styles.text}>£{item.price}</Text>,
-    <TouchableOpacity onPress={() => removeItemHandler(item)}>
-      <Icon name="trash" size={24} style={styles.icon} />
-    </TouchableOpacity>
-  ]);
+    </View>
+  );
+
+  const totalPrice = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
   return (
     <View style={styles.cartContainer}>
@@ -95,11 +94,16 @@ export default function CartPage() {
           </Text>
         </MessageBox>
       ) : (
-        <ScrollView style={styles.scrollView}>
-          <Table borderStyle={{borderWidth: 2, borderColor: '#c8e1ff'}}>
-            <Rows data={tableData} textStyle={styles.text}/>
-          </Table>
-        </ScrollView>
+        <FlatList
+          data={cartItems}
+          renderItem={renderItem}
+          keyExtractor={(item) => item._id.toString()}
+          ListFooterComponent={
+            <View style={styles.totalPriceContainer}>
+              <Text style={styles.totalPriceText}>Total: £{totalPrice.toFixed(2)}</Text>
+            </View>
+          }
+        />
       )}
       <TouchableOpacity
         onPress={checkoutHandler}
@@ -110,4 +114,3 @@ export default function CartPage() {
     </View>
   );
 }
-

@@ -1,10 +1,11 @@
-import {create} from 'zustand';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import {CartItem, ShippingAddress} from './types/Cart';
-import {UserInfo} from './types/UserInfo';
+import { create } from "zustand";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Appearance } from "react-native";
+import { CartItem, ShippingAddress } from "./types/Cart";
+import { UserInfo } from "./types/UserInfo";
 
 interface StoreState {
-  mode: string;
+  mode: "light" | "dark" | "system";
   cart: {
     cartItems: CartItem[];
     shippingAddress: ShippingAddress;
@@ -20,7 +21,7 @@ interface StoreState {
 
 interface StoreActions {
   initializeState: () => Promise<void>;
-  switchMode: () => Promise<void>;
+  switchMode: (selectedMode: "light" | "dark" | "system") => Promise<void>;
   cartAddItem: (newItem: CartItem) => Promise<void>;
   cartRemoveItem: (itemToRemove: CartItem) => void;
   cartClear: () => void;
@@ -34,22 +35,25 @@ export type MyState = StoreState & StoreActions;
 
 const loadInitialState = async () => {
   try {
-    const userInfo = await AsyncStorage.getItem('userInfo');
-    const mode = (await AsyncStorage.getItem('mode')) ?? 'light';
-    const cartItems = await AsyncStorage.getItem('cartItems');
-    const shippingAddress = await AsyncStorage.getItem('shippingAddress');
-    const paymentMethod = await AsyncStorage.getItem('paymentMethod');
-    const existingAddresses = await AsyncStorage.getItem('existingAddresses');
+    const userInfo = await AsyncStorage.getItem("userInfo");
+    let mode = await AsyncStorage.getItem("mode");
+    if (!mode) {
+      mode = "system";
+    }
+    const cartItems = await AsyncStorage.getItem("cartItems");
+    const shippingAddress = await AsyncStorage.getItem("shippingAddress");
+    const paymentMethod = await AsyncStorage.getItem("paymentMethod");
+    const existingAddresses = await AsyncStorage.getItem("existingAddresses");
 
     return {
       userInfo: userInfo ? JSON.parse(userInfo) : null,
-      mode: mode,
+      mode: mode as "light" | "dark" | "system",
       cart: {
         cartItems: cartItems ? JSON.parse(cartItems) : [],
         shippingAddress: shippingAddress
           ? JSON.parse(shippingAddress)
           : ({} as ShippingAddress),
-        paymentMethod: paymentMethod || 'Card',
+        paymentMethod: paymentMethod || "Card",
         itemsPrice: 0,
         shippingPrice: 0,
         taxPrice: 0,
@@ -58,13 +62,13 @@ const loadInitialState = async () => {
       existingAddresses: existingAddresses ? JSON.parse(existingAddresses) : [],
     };
   } catch (error) {
-    console.error('Failed to load initial state:', error);
+    console.error("Failed to load initial state:", error);
     return {
-      mode: 'light',
+      mode: "system" as "light" | "dark" | "system",
       cart: {
         cartItems: [],
         shippingAddress: {} as ShippingAddress,
-        paymentMethod: 'Card',
+        paymentMethod: "Card",
         itemsPrice: 0,
         shippingPrice: 0,
         taxPrice: 0,
@@ -76,13 +80,12 @@ const loadInitialState = async () => {
   }
 };
 
-// Use StateCreator to define the store
 const store = create<MyState>((set, get) => ({
-  mode: 'light',
+  mode: "system",
   cart: {
     cartItems: [],
     shippingAddress: {} as ShippingAddress,
-    paymentMethod: 'Card',
+    paymentMethod: "Card",
     itemsPrice: 0,
     shippingPrice: 0,
     taxPrice: 0,
@@ -94,34 +97,40 @@ const store = create<MyState>((set, get) => ({
     const loadedState = await loadInitialState();
     set(loadedState);
   },
-  switchMode: async () => {
-    const newMode = get().mode === 'light' ? 'dark' : 'light';
+  switchMode: async (selectedMode) => {
+    console.log("Switching mode to:", selectedMode);
     try {
-      await AsyncStorage.setItem('mode', newMode);
-      set({mode: newMode});
+      if (selectedMode === "system") {
+        const systemColorScheme = Appearance.getColorScheme();
+        set({ mode: systemColorScheme });
+      } else {
+        await AsyncStorage.setItem("mode", selectedMode);
+        set({ mode: selectedMode });
+      }
+      console.log("Mode switched successfully to:", selectedMode);
     } catch (error) {
-      console.error('Failed to switch mode:', error);
+      console.error("Failed to switch mode:", error);
     }
   },
   cartAddItem: async (newItem: CartItem) => {
     const cartItems = get().cart.cartItems;
-    const existItem = cartItems.find(item => item._id === newItem._id);
+    const existItem = cartItems.find((item) => item._id === newItem._id);
     const updatedCartItems = existItem
-      ? cartItems.map(item => (item._id === existItem._id ? newItem : item))
+      ? cartItems.map((item) => (item._id === existItem._id ? newItem : item))
       : [...cartItems, newItem];
     try {
-      await AsyncStorage.setItem('cartItems', JSON.stringify(updatedCartItems));
-      set({cart: {...get().cart, cartItems: updatedCartItems}});
+      await AsyncStorage.setItem("cartItems", JSON.stringify(updatedCartItems));
+      set({ cart: { ...get().cart, cartItems: updatedCartItems } });
     } catch (error) {
-      console.error('Failed to add item to cart:', error);
+      console.error("Failed to add item to cart:", error);
     }
   },
   cartRemoveItem: (itemToRemove: CartItem) => {
     const cartItems = get().cart.cartItems.filter(
-      (item: CartItem) => item._id !== itemToRemove._id,
+      (item: CartItem) => item._id !== itemToRemove._id
     );
-    AsyncStorage.setItem('cartItems', JSON.stringify(cartItems));
-    set({cart: {...get().cart, cartItems}});
+    AsyncStorage.setItem("cartItems", JSON.stringify(cartItems));
+    set({ cart: { ...get().cart, cartItems } });
   },
   cartClear: () => {
     set({
@@ -132,16 +141,18 @@ const store = create<MyState>((set, get) => ({
     });
   },
   userSignIn: (userInfo: UserInfo) => {
-    console.log('User info received from server:', userInfo);
-    AsyncStorage.setItem('userInfo', JSON.stringify(userInfo));
-    set({userInfo});
+    console.log("Signing in user:", userInfo);
+    AsyncStorage.setItem("userInfo", JSON.stringify(userInfo));
+    set({ userInfo });
+    console.log("User signed in:", userInfo);
   },
   userSignOut: () => {
+    console.log("Signing out user");
     AsyncStorage.multiRemove([
-      'userInfo',
-      'cartItems',
-      'shippingAddress',
-      'paymentMethod',
+      "userInfo",
+      "cartItems",
+      "shippingAddress",
+      "paymentMethod",
     ]);
     set({
       userInfo: null,
@@ -149,17 +160,18 @@ const store = create<MyState>((set, get) => ({
         ...get().cart,
         cartItems: [],
         shippingAddress: {} as ShippingAddress,
-        paymentMethod: 'Card',
+        paymentMethod: "Card",
       },
     });
+    console.log("User signed out");
   },
   saveShippingAddress: (payload: ShippingAddress) => {
-    AsyncStorage.setItem('shippingAddress', JSON.stringify(payload));
-    set({cart: {...get().cart, shippingAddress: payload}});
+    AsyncStorage.setItem("shippingAddress", JSON.stringify(payload));
+    set({ cart: { ...get().cart, shippingAddress: payload } });
   },
   savePaymentMethod: (paymentMethod: string) => {
-    AsyncStorage.setItem('paymentMethod', paymentMethod);
-    set({cart: {...get().cart, paymentMethod}});
+    AsyncStorage.setItem("paymentMethod", paymentMethod);
+    set({ cart: { ...get().cart, paymentMethod } });
   },
 }));
 
