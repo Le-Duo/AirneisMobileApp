@@ -4,7 +4,6 @@ import {
   StatusBar,
   SafeAreaView,
   Platform,
-  useColorScheme,
 } from "react-native";
 import {
   NavigationContainer,
@@ -27,7 +26,6 @@ import SigninPage from "./src/pages/SigninPage";
 import SignupPage from "./src/pages/SignupPage";
 import CartPage from "./src/pages/CartPage";
 import ProfilePage from "./src/pages/ProfilePage";
-import PaymentMethodPage from "./src/pages/PaymentMethodPage";
 import ShippingAddressPage from "./src/pages/ShippingAddressPage";
 import PlaceOrderPage from "./src/pages/PlaceOrderPage";
 import OrderPage from "./src/pages/OrderPage";
@@ -38,7 +36,6 @@ import FilterScreen from "./src/components/FilterScreen";
 import { Category } from "./src/types/Category";
 import { FilterProvider } from "./src/context/FilterContext";
 import ThemeSettingsPage from "./src/pages/ThemeSettingsPage";
-import { Appearance } from "react-native";
 
 export type RootStackParamList = {
   HomePage: undefined;
@@ -79,8 +76,10 @@ const queryClient = new QueryClient();
 const HomeStack = createNativeStackNavigator();
 
 function HomeStackNavigator() {
+  const styles = useGetStyles();  // Use the custom hook for header styles
+
   return (
-    <HomeStack.Navigator screenOptions={{ ...useGetStyles }}>
+    <HomeStack.Navigator>
       <HomeStack.Screen
         name="HomePage"
         component={HomePage}
@@ -89,12 +88,14 @@ function HomeStackNavigator() {
       <HomeStack.Screen
         name="Product"
         component={ProductPage}
-        options={{ headerTitle: "Product Details" }}
+        options={{ 
+          headerTitle: "Product Details",
+        }}
       />
       <HomeStack.Screen
         name="Products"
         component={ProductsPage}
-        options={{ headerTitle: "Products" }}
+        // options={{ headerTitle: "Products" }}
       />
       <HomeStack.Screen
         name="PasswordResetRequest"
@@ -195,8 +196,10 @@ function MyTabs() {
 const SearchStack = createNativeStackNavigator();
 
 function SearchStackNavigator() {
+  const headerStyles = useHeaderStyles();
+
   return (
-    <SearchStack.Navigator screenOptions={{ ...useGetStyles }}>
+    <SearchStack.Navigator screenOptions={headerStyles}>
       <SearchStack.Screen
         name="SearchPage"
         component={SearchPage}
@@ -205,8 +208,14 @@ function SearchStackNavigator() {
       <SearchStack.Screen
         name="Product"
         component={ProductPage}
-        options={{ headerTitle: "Product Details" }}
-      />
+        options={{
+          headerTitle: "Product Details",
+          headerStyle: {
+            ...headerStyles.headerStyle,
+          },
+          headerTintColor: headerStyles.headerTintColor,
+        }}
+      /> 
       <SearchStack.Screen name="FilterScreen" component={FilterScreen} />
     </SearchStack.Navigator>
   );
@@ -222,7 +231,11 @@ function RootStackNavigator() {
         component={MyTabs}
         options={{ headerShown: false }}
       />
-      <RootStack.Screen name="Product" component={ProductPage} />
+      <RootStack.Screen
+        name="Product"
+        component={ProductPage}
+        options={{ headerTitle: "Product Details" }}
+      />
       <RootStack.Screen name="ThemeSettings" component={ThemeSettingsPage} />
     </RootStack.Navigator>
   );
@@ -239,13 +252,7 @@ const CustomDarkTheme = {
 };
 
 const getTheme = (mode: string) => {
-  const colorScheme = Appearance.getColorScheme();
-  console.log('colorScheme:', colorScheme);
-  if (mode === "system") {
-    return colorScheme === "dark" ? CustomDarkTheme : NavigationDefaultTheme;
-  } else {
-    return mode === "dark" ? CustomDarkTheme : NavigationDefaultTheme;
-  }
+  return mode === "dark" ? CustomDarkTheme : NavigationDefaultTheme;
 };
 
 export default function App() {

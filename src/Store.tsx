@@ -1,11 +1,11 @@
 import { create } from "zustand";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Appearance } from "react-native";
+import { Appearance, ColorSchemeName } from "react-native";
 import { CartItem, ShippingAddress } from "./types/Cart";
 import { UserInfo } from "./types/UserInfo";
 
 interface StoreState {
-  mode: "light" | "dark" | "system";
+  mode: "light" | "dark";
   cart: {
     cartItems: CartItem[];
     shippingAddress: ShippingAddress;
@@ -21,7 +21,7 @@ interface StoreState {
 
 interface StoreActions {
   initializeState: () => Promise<void>;
-  switchMode: (selectedMode: "light" | "dark" | "system") => Promise<void>;
+  switchMode: (selectedMode: "light" | "dark") => Promise<void>;
   cartAddItem: (newItem: CartItem) => Promise<void>;
   cartRemoveItem: (itemToRemove: CartItem) => void;
   cartClear: () => void;
@@ -38,7 +38,7 @@ const loadInitialState = async () => {
     const userInfo = await AsyncStorage.getItem("userInfo");
     let mode = await AsyncStorage.getItem("mode");
     if (!mode) {
-      mode = "system";
+      mode = "light";
     }
     const cartItems = await AsyncStorage.getItem("cartItems");
     const shippingAddress = await AsyncStorage.getItem("shippingAddress");
@@ -47,7 +47,7 @@ const loadInitialState = async () => {
 
     return {
       userInfo: userInfo ? JSON.parse(userInfo) : null,
-      mode: mode as "light" | "dark" | "system",
+      mode: mode as "light" | "dark",
       cart: {
         cartItems: cartItems ? JSON.parse(cartItems) : [],
         shippingAddress: shippingAddress
@@ -64,7 +64,7 @@ const loadInitialState = async () => {
   } catch (error) {
     console.error("Failed to load initial state:", error);
     return {
-      mode: "system" as "light" | "dark" | "system",
+      mode: "light" as "light" | "dark",
       cart: {
         cartItems: [],
         shippingAddress: {} as ShippingAddress,
@@ -81,7 +81,26 @@ const loadInitialState = async () => {
 };
 
 const store = create<MyState>((set, get) => ({
-  mode: "system",
+  mode: "light",
+
+  subscribeToSystemThemeChanges: () => {
+    const listener = ({
+      colorScheme,
+    }: {
+      colorScheme: ColorSchemeName | null;
+    }) => {
+      const safeColorScheme =
+        colorScheme === "light" || colorScheme === "dark"
+          ? colorScheme
+          : "light";
+      console.log(`Attempting to switch mode to: ${safeColorScheme}`);
+      set({ mode: safeColorScheme });
+      console.log(`Mode switched successfully to: ${safeColorScheme}`);
+    };
+    const subscription = Appearance.addChangeListener(listener);
+    return () => subscription.remove();
+  },
+
   cart: {
     cartItems: [],
     shippingAddress: {} as ShippingAddress,
@@ -100,13 +119,8 @@ const store = create<MyState>((set, get) => ({
   switchMode: async (selectedMode) => {
     console.log("Switching mode to:", selectedMode);
     try {
-      if (selectedMode === "system") {
-        const systemColorScheme = Appearance.getColorScheme();
-        set({ mode: systemColorScheme });
-      } else {
-        await AsyncStorage.setItem("mode", selectedMode);
-        set({ mode: selectedMode });
-      }
+      await AsyncStorage.setItem("mode", selectedMode);
+      set({ mode: selectedMode });
       console.log("Mode switched successfully to:", selectedMode);
     } catch (error) {
       console.error("Failed to switch mode:", error);

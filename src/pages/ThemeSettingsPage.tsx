@@ -8,12 +8,9 @@ import { RadioButton } from "react-native-paper";
 const ThemeSettingsPage = () => {
   const { styles } = useGetStyles();
   const navigation = useNavigation();
-  const { mode, switchMode } = useStore((state) => ({
-    mode: state.mode,
-    switchMode: state.switchMode,
-  }));
+  const { mode, switchMode } = useStore();
 
-  const handleSwitchMode = (selectedMode: "light" | "dark" | "system") => {
+  const handleSwitchMode = (selectedMode: "light" | "dark") => {
     console.log("Attempting to switch mode to:", selectedMode);
     switchMode(selectedMode);
     navigation.goBack();
@@ -44,19 +41,6 @@ const ThemeSettingsPage = () => {
             onPress={() => handleSwitchMode("dark")}
           />
           <Text style={styles.text}>Sombre</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.radioItem}
-          onPress={() => handleSwitchMode("system")}
-        >
-          <RadioButton
-            value="system"
-            status={mode === "system" ? "checked" : "unchecked"}
-            onPress={() => handleSwitchMode("system")}
-          />
-          <Text style={styles.text}>
-            Automatique (par défaut) Utilisez les réglages de vos appareils
-          </Text>
         </TouchableOpacity>
       </View>
     </View>
