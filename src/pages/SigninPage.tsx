@@ -71,7 +71,6 @@ export default function SigninPage() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Sign In</Text>
       <TextInput
         style={styles.input}
         placeholder="Email"

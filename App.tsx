@@ -10,6 +10,7 @@ import {
   NavigationContainer,
   DarkTheme as NavigationDarkTheme,
   DefaultTheme as NavigationDefaultTheme,
+  LinkingOptions,
 } from "@react-navigation/native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -44,6 +45,7 @@ export type RootStackParamList = {
   Product: { slug: string };
   Products: { category: string };
   PasswordResetRequest: undefined;
+  PasswordReset: { token: string };
   SignIn: { redirect?: string };
   SignUp: undefined;
   Cart: undefined;
@@ -109,7 +111,7 @@ function HomeStackNavigator() {
       />
       <HomeStack.Screen
         name="Payment"
-        component={PaymentPage} // Added Payment screen
+        component={PaymentPage}
       />
       <HomeStack.Screen name="PlaceOrder" component={PlaceOrderPage} />
       <HomeStack.Screen name="Order" component={OrderPage} />
@@ -265,6 +267,15 @@ const getTheme = (mode: string) => {
   return mode === "dark" ? CustomDarkTheme : NavigationDefaultTheme;
 };
 
+const linking: LinkingOptions<RootStackParamList> = {
+  prefixes: ['airneisapp://'],
+  config: {
+    screens: {
+      PasswordReset: 'reset-password/:token',
+    },
+  },
+};
+
 export default function App() {
   const storeMode = useStore((state) => state.mode);
   const [theme, setTheme] = useState(getTheme(storeMode));
@@ -293,7 +304,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <PaperProvider theme={theme}>
-        <NavigationContainer theme={theme}>
+        <NavigationContainer theme={theme} linking={linking}>
           <FilterProvider>
             <GestureHandlerRootView style={{ flex: 1 }}>
               <StatusBar

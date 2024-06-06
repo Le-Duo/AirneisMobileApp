@@ -26,15 +26,30 @@ export const useUserSignupMutation = () =>
       name: string;
       email: string;
       password: string;
-    }) =>
-      (
-        await apiClient.post<UserInfo>('api/users/signup', {
+    }) => {
+      try {
+        const response = await apiClient.post<UserInfo>('api/users/signup', {
           name,
           email,
           password,
-        })
-      ).data,
+        });
+        return response.data;
+      } catch (error: any) {
+        if (error.response) {
+          // Server responded with a status other than 200 range
+          console.error('Error response:', error.response.data);
+        } else if (error.request) {
+          // Request was made but no response received
+          console.error('Error request:', error.request);
+        } else {
+          // Something else happened while setting up the request
+          console.error('Error message:', error.message);
+        }
+        throw error;
+      }
+    },
   });
+  
 export const usePasswordResetRequestMutation = () => {
   return useMutation({
     mutationFn: async (email: string) => {
