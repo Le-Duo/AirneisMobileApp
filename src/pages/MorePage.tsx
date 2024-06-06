@@ -15,9 +15,10 @@ type MenuItem = {
 const MorePage = () => {
   const { styles } = useGetStyles();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
-  const { mode, switchMode } = useStore((state) => ({
+  const { mode, switchMode, userInfo } = useStore((state) => ({
     mode: state.mode,
     switchMode: state.switchMode,
+    userInfo: state.userInfo,
   }));
 
   const menuItems: MenuItem[] = [
@@ -27,7 +28,7 @@ const MorePage = () => {
 
   return (
     <View style={styles.container}>
-      {menuItems.map((item, index) => (
+      {userInfo && menuItems.map((item, index) => (
         <TouchableOpacity
           key={index}
           style={styles.menuItem}

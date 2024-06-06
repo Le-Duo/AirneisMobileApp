@@ -9,6 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import {useNavigation, NavigationProp} from '@react-navigation/native';
+import {useGetStyles} from '../styles';
 
 type RootStackParamList = {
   HomePage: undefined;
@@ -22,6 +23,7 @@ const PasswordResetRequest = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const {mutate, isError, isSuccess, error} = usePasswordResetRequestMutation();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const {styles} = useGetStyles();
 
   const validateEmail = (email: string): boolean => {
     const re = /\S+@\S+\.\S+/;
@@ -68,23 +70,25 @@ const PasswordResetRequest = () => {
   }, [isError, isSuccess, error, navigation]);
 
   return (
-    <View>
-      <Text>Email Address</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Email Address</Text>
       <TextInput
-        style={{height: 40, borderColor: '#005eb8', borderWidth: 1}}
+        style={styles.input}
         onChangeText={handleEmailChange}
         value={email}
         placeholder="Enter your email"
         keyboardType="email-address"
         editable={!loading}
+        placeholderTextColor={styles.text.color}
       />
-      {emailError ? <Text style={{color: 'red'}}>{emailError}</Text> : null}
+      {emailError ? <Text style={styles.error}>{emailError}</Text> : null}
       <Button
         onPress={handleSubmit}
         title={loading ? 'Loading...' : 'Send Reset Link'}
         disabled={loading}
+        color={styles.button.backgroundColor}
       />
-      {loading && <ActivityIndicator size="small" color="#2125290ff" />}
+      {loading && <ActivityIndicator size="small" color={styles.text.color} />}
     </View>
   );
 };

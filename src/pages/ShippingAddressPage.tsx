@@ -6,7 +6,6 @@ import {
   Button,
   ScrollView,
   TouchableOpacity,
-  StyleSheet,
   Switch,
   ActivityIndicator,
   Alert,
@@ -20,6 +19,7 @@ import {UserAddress} from '../types/UserInfo';
 import {RootStackParamList} from '../../App';
 import {countries} from '../data/countries';
 import {useAddAddressMutation, useGetUserByIdQuery} from '../hooks/userHook';
+import {useGetStyles} from '../styles';
 
 export default function ShippingAddressPage() {
   const navigation =
@@ -46,6 +46,8 @@ export default function ShippingAddressPage() {
     error,
     isLoading,
   } = useGetUserByIdQuery(userConnectedID ?? '');
+
+  const {styles, mode} = useGetStyles();
 
   useEffect(() => {
     if (!userInfo) {
@@ -105,46 +107,50 @@ export default function ShippingAddressPage() {
   };
 
   if (isLoading) {
-    return <ActivityIndicator size="large" color="#005eb8" />;
+    return <ActivityIndicator size="large" color={mode === 'dark' ? '#fff' : '#212529'} />;
   }
 
   if (error) {
     Alert.alert('Error', 'Unable to load user data');
-    return;
+    return null;
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.header}>Shipping Address</Text>
+    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <TextInput
         style={styles.input}
         placeholder="Full Name"
         value={fullName}
         onChangeText={setFullName}
+        placeholderTextColor={styles.text.color}
       />
       <TextInput
         style={styles.input}
         placeholder="Phone Number"
         value={phoneNumber}
         onChangeText={setPhoneNumber}
+        placeholderTextColor={styles.text.color}
       />
       <TextInput
         style={styles.input}
         placeholder="Address"
         value={street}
         onChangeText={setStreet}
+        placeholderTextColor={styles.text.color}
       />
       <TextInput
         style={styles.input}
         placeholder="City"
         value={city}
         onChangeText={setCity}
+        placeholderTextColor={styles.text.color}
       />
       <TextInput
         style={styles.input}
         placeholder="Postal Code"
         value={postalCode}
         onChangeText={setPostalCode}
+        placeholderTextColor={styles.text.color}
       />
       <Picker
         style={styles.picker}
@@ -162,62 +168,18 @@ export default function ShippingAddressPage() {
           onValueChange={setSaveAddress}
         />
       </View>
-      <Button title="Continue" onPress={submitHandler} color="#005eb8" />
+      <Button title="Continue" onPress={submitHandler} color={styles.button.backgroundColor} />
       {addresses.map(address => (
         <TouchableOpacity
           key={address._id}
           onPress={() => handleAddressClick(address)}
           style={styles.addressContainer}>
-          <Text>
-            {address.street}, {address.city}, {address.postalCode},{' '}
-            {address.country}
+          <Text style={styles.text}>
+            {address.street}, {address.city}, {address.postalCode}, {address.country}
           </Text>
-          {address.isDefault && <Text>Default</Text>}
+          {address.isDefault && <Text style={styles.text}>Default</Text>}
         </TouchableOpacity>
       ))}
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#FFFFFF',
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#CCCCCC',
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 10,
-  },
-  picker: {
-    marginBottom: 10,
-  },
-  switchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 10,
-    marginBottom: 20,
-  },
-  switch: {
-    transform: [{scaleX: 1.2}, {scaleY: 1.2}],
-  },
-  text: {
-    flex: 1,
-    marginRight: 10,
-  },
-  addressContainer: {
-    padding: 10,
-    marginVertical: 5,
-    backgroundColor: '#f8f8f8',
-    borderRadius: 5,
-  },
-});

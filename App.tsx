@@ -4,6 +4,7 @@ import {
   StatusBar,
   SafeAreaView,
   Platform,
+  TextStyle,
 } from "react-native";
 import {
   NavigationContainer,
@@ -36,6 +37,7 @@ import FilterScreen from "./src/components/FilterScreen";
 import { Category } from "./src/types/Category";
 import { FilterProvider } from "./src/context/FilterContext";
 import ThemeSettingsPage from "./src/pages/ThemeSettingsPage";
+import PaymentPage from "./src/pages/PaymentMethodPage";
 
 export type RootStackParamList = {
   HomePage: undefined;
@@ -76,7 +78,7 @@ const queryClient = new QueryClient();
 const HomeStack = createNativeStackNavigator();
 
 function HomeStackNavigator() {
-  const styles = useGetStyles();  // Use the custom hook for header styles
+  const styles = useGetStyles();
 
   return (
     <HomeStack.Navigator>
@@ -88,15 +90,11 @@ function HomeStackNavigator() {
       <HomeStack.Screen
         name="Product"
         component={ProductPage}
-        options={{ 
+        options={{
           headerTitle: "Product Details",
         }}
       />
-      <HomeStack.Screen
-        name="Products"
-        component={ProductsPage}
-        // options={{ headerTitle: "Products" }}
-      />
+      <HomeStack.Screen name="Products" component={ProductsPage} />
       <HomeStack.Screen
         name="PasswordResetRequest"
         component={PasswordResetRequest}
@@ -108,6 +106,10 @@ function HomeStackNavigator() {
       <HomeStack.Screen
         name="ShippingAddress"
         component={ShippingAddressPage}
+      />
+      <HomeStack.Screen
+        name="Payment"
+        component={PaymentPage} // Added Payment screen
       />
       <HomeStack.Screen name="PlaceOrder" component={PlaceOrderPage} />
       <HomeStack.Screen name="Order" component={OrderPage} />
@@ -196,10 +198,20 @@ function MyTabs() {
 const SearchStack = createNativeStackNavigator();
 
 function SearchStackNavigator() {
-  const headerStyles = useHeaderStyles();
+  const { styles: headerStyles } = useGetStyles();
 
   return (
-    <SearchStack.Navigator screenOptions={headerStyles}>
+    <SearchStack.Navigator
+      screenOptions={{
+        headerStyle: headerStyles.headerStyle,
+        headerTintColor: headerStyles.headerTintColor,
+        headerTitleStyle: {
+          ...headerStyles.headerTitleStyle,
+          fontWeight: "bold" as TextStyle["fontWeight"],
+        },
+        headerTitleAlign: "center" as "center" | "left",
+      }}
+    >
       <SearchStack.Screen
         name="SearchPage"
         component={SearchPage}
@@ -210,12 +222,10 @@ function SearchStackNavigator() {
         component={ProductPage}
         options={{
           headerTitle: "Product Details",
-          headerStyle: {
-            ...headerStyles.headerStyle,
-          },
+          headerStyle: headerStyles.headerStyle,
           headerTintColor: headerStyles.headerTintColor,
         }}
-      /> 
+      />
       <SearchStack.Screen name="FilterScreen" component={FilterScreen} />
     </SearchStack.Navigator>
   );

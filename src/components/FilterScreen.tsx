@@ -3,10 +3,8 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   ScrollView,
   TouchableOpacity,
-  StyleSheet,
 } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import Icon from "react-native-vector-icons/FontAwesome";
@@ -37,7 +35,7 @@ function FilterScreen() {
   );
   const [showCategories, setShowCategories] = useState(false);
   const [showMaterials, setShowMaterials] = useState(false);
-  const { styles } = useGetStyles();
+  const { styles, mode } = useGetStyles();
 
   const toggleCategory = (category: Category) => {
     const index = selectedCategoriesState.findIndex(
@@ -63,7 +61,7 @@ function FilterScreen() {
   };
 
   return (
-    <ScrollView>
+    <ScrollView style={styles.scrollView}>
       <View style={styles.container}>
         <TextInput
           placeholder="Minimum Price"
@@ -71,6 +69,7 @@ function FilterScreen() {
           onChangeText={(text) => setLocalMinPrice(text.replace(/[^0-9]/g, ""))}
           style={styles.input}
           keyboardType="numeric"
+          placeholderTextColor={mode === 'dark' ? 'gray' : '#999'}
         />
         <TextInput
           placeholder="Maximum Price"
@@ -78,12 +77,13 @@ function FilterScreen() {
           onChangeText={(text) => setLocalMaxPrice(text.replace(/[^0-9]/g, ""))}
           style={styles.input}
           keyboardType="numeric"
+          placeholderTextColor={mode === 'dark' ? 'gray' : '#999'}
         />
         <View>
           <View style={styles.filterSection}>
             <TouchableOpacity
               onPress={() => setShowCategories(!showCategories)}
-              style={styles.button}
+              style={[styles.button, { width: '100%' }]}
             >
               <Text style={styles.buttonText}>
                 {showCategories ? "Hide Categories" : "Show Categories"}
@@ -117,7 +117,7 @@ function FilterScreen() {
           <View style={styles.filterSection}>
             <TouchableOpacity
               onPress={() => setShowMaterials(!showMaterials)}
-              style={styles.button}
+              style={[styles.button, { width: '100%' }]}
             >
               <Text style={styles.buttonText}>
                 {showMaterials ? "Hide Materials" : "Show Materials"}

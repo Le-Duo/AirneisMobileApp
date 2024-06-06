@@ -13,6 +13,7 @@ import store from '../Store';
 import {useUserSigninMutation} from '../hooks/userHook';
 import {ApiError} from '../types/APIError';
 import {getError} from '../utils';
+import {useGetStyles} from '../styles';
 
 type RootStackParamList = {
   HomePage: undefined;
@@ -43,6 +44,7 @@ export default function SigninPage() {
   }));
 
   const {mutateAsync: signin} = useUserSigninMutation();
+  const {styles} = useGetStyles();
 
   const navigateToHome = () => {
     navigation.navigate('Home');
@@ -68,59 +70,43 @@ export default function SigninPage() {
   };
 
   return (
-    <View style={{padding: 20}}>
-      <Text style={{fontSize: 22, fontWeight: 'bold', marginBottom: 20}}>
-        Sign In
-      </Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Sign In</Text>
       <TextInput
-        style={{
-          borderWidth: 1,
-          borderColor: 'gray',
-          marginBottom: 20,
-          padding: 10,
-        }}
+        style={styles.input}
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
+        placeholderTextColor={styles.text.color}
       />
       <TextInput
-        style={{
-          borderWidth: 1,
-          borderColor: 'gray',
-          marginBottom: 20,
-          padding: 10,
-        }}
+        style={styles.input}
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry={!showPassword}
+        placeholderTextColor={styles.text.color}
       />
       <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-        <Text>Show Password</Text>
+        <Text style={styles.text}>Show Password</Text>
       </TouchableOpacity>
       <TouchableOpacity
         onPress={submitHandler}
-        style={{
-          backgroundColor: 'blue',
-          padding: 10,
-          alignItems: 'center',
-          borderRadius: 5,
-        }}
+        style={[styles.button, isLoading && styles.buttonDisabled]}
         disabled={isLoading}>
         {isLoading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={{color: '#fff'}}>Sign In</Text>
+          <Text style={styles.buttonText}>Sign In</Text>
         )}
       </TouchableOpacity>
-      <TouchableOpacity
-        onPress={() => navigation.navigate('PasswordResetRequest')}>
-        <Text style={{marginTop: 20}}>Forgot Password?</Text>
+      <TouchableOpacity onPress={() => navigation.navigate('PasswordResetRequest')}>
+        <Text style={styles.text}>Forgot Password?</Text>
       </TouchableOpacity>
       <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-        <Text style={{marginTop: 20}}>New customer? Create your account</Text>
+        <Text style={styles.text}>New customer? Create your account</Text>
       </TouchableOpacity>
     </View>
   );

@@ -2,7 +2,6 @@ import {
   View,
   Text,
   ScrollView,
-  StyleSheet,
   Image,
   TouchableOpacity,
 } from 'react-native';
@@ -11,9 +10,9 @@ import LoadingBox from '../components/LoadingBox';
 import MessageBox from '../components/MessageBox';
 import {useGetOrderDetailsQuery} from '../hooks/orderHook';
 import {ApiError} from '../types/APIError';
-import {getError} from '../utils';
+import {getError, formatImageUrl} from '../utils';
 import {RootStackParamList} from '../../App';
-import { formatImageUrl } from '../utils';
+import {useGetStyles} from '../styles';
 
 export default function OrderPage() {
   const navigation =
@@ -27,6 +26,8 @@ export default function OrderPage() {
     const date = new Date(dateString);
     return `${date.toLocaleDateString()} ${date.toLocaleTimeString()}`;
   };
+
+  const {styles} = useGetStyles(); // Using styles from useGetStyles
 
   if (isLoading) {
     return <LoadingBox />;
@@ -44,20 +45,22 @@ export default function OrderPage() {
 
   return (
     <ScrollView>
-      <Text style={styles.header}>Order {orderId}</Text>
+      <Text style={styles.title}>Order {orderId}</Text>
       <View style={styles.container}>
-        <View style={styles.card}>
+        <View style={styles.orderCard}>
           <Text style={styles.cardTitle}>Shipping</Text>
           <Text>
             <Text style={styles.bold}>Name:</Text>{' '}
-            {order.shippingAddress.fullName}
+            <Text style={styles.text}>{order.shippingAddress.fullName}</Text>
             {'\n'}
             <Text style={styles.bold}>Phone Number:</Text>{' '}
-            {order.shippingAddress.phoneNumber}
+            <Text style={styles.text}>{order.shippingAddress.phoneNumber}</Text>
             {'\n'}
             <Text style={styles.bold}>Address:</Text>{' '}
-            {order.shippingAddress.street}, {order.shippingAddress.city},{' '}
-            {order.shippingAddress.postalCode}, {order.shippingAddress.country}
+            <Text style={styles.text}>
+              {order.shippingAddress.street}, {order.shippingAddress.city},{' '}
+              {order.shippingAddress.postalCode}, {order.shippingAddress.country}
+            </Text>
           </Text>
           {order.isDelivered ? (
             <MessageBox variant="success">
@@ -71,11 +74,15 @@ export default function OrderPage() {
           )}
         </View>
 
-        <View style={styles.card}>
+        <View style={styles.orderCard}>
           <Text style={styles.cardTitle}>Payment</Text>
-          <Text>
-            <Text style={styles.bold}>Method:</Text> {order.paymentMethod}
-          </Text>
+          {typeof order.paymentMethod === 'object' && (
+            <View>
+              <Text style={styles.text}>
+                <Text style={styles.bold}>Method:</Text> {order.paymentMethod}
+              </Text>
+            </View>
+          )}
           {order.isPaid ? (
             <MessageBox variant="success">
               Paid at{' '}
@@ -88,7 +95,7 @@ export default function OrderPage() {
           )}
         </View>
 
-        <View style={styles.card}>
+        <View style={styles.orderCard}>
           <Text style={styles.cardTitle}>Items</Text>
           {order.orderItems.map(item => (
             <TouchableOpacity
@@ -102,9 +109,9 @@ export default function OrderPage() {
                 }}
                 style={styles.image}
               />
-              <Text>{item.name}</Text>
-              <Text>{item.quantity}</Text>
-              <Text>£{item.price}</Text>
+              <Text style={styles.text}>{item.name}</Text>
+              <Text style={styles.text}>{item.quantity}</Text>
+              <Text style={styles.text}>£{item.price}</Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -112,33 +119,3 @@ export default function OrderPage() {
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {
-    fontSize: 24,
-    marginVertical: 10,
-    textAlign: 'center',
-  },
-  container: {
-    padding: 10,
-  },
-  card: {
-    marginVertical: 10,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 5,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  bold: {
-    fontWeight: 'bold',
-  },
-  image: {
-    width: 50,
-    height: 50,
-    resizeMode: 'contain',
-  },
-});

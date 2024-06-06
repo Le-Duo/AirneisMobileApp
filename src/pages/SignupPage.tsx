@@ -13,6 +13,7 @@ import {useUserSignupMutation} from '../hooks/userHook';
 import {ApiError} from '../types/APIError';
 import {getError} from '../utils';
 import {toast} from 'react-toastify';
+import {useGetStyles} from '../styles';
 
 type RootStackParamList = {
   HomePage: undefined;
@@ -40,6 +41,7 @@ export default function SignupPage() {
   }, [userInfo, navigation]);
 
   const {mutateAsync: signup} = useUserSignupMutation();
+  const {styles} = useGetStyles();
 
   const submitHandler = async () => {
     if (password !== confirmPassword) {
@@ -59,71 +61,48 @@ export default function SignupPage() {
   };
 
   return (
-    <View style={{padding: 20}}>
-      <Text style={{fontSize: 22, fontWeight: 'bold', marginBottom: 20}}>
-        Sign Up
-      </Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Sign Up</Text>
       <TextInput
-        style={{
-          borderWidth: 1,
-          borderColor: 'gray',
-          marginBottom: 20,
-          padding: 10,
-        }}
+        style={styles.input}
         placeholder="Name"
         value={name}
         onChangeText={setName}
+        placeholderTextColor={styles.text.color}
       />
       <TextInput
-        style={{
-          borderWidth: 1,
-          borderColor: 'gray',
-          marginBottom: 20,
-          padding: 10,
-        }}
+        style={styles.input}
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
+        placeholderTextColor={styles.text.color}
       />
       <TextInput
-        style={{
-          borderWidth: 1,
-          borderColor: 'gray',
-          marginBottom: 20,
-          padding: 10,
-        }}
+        style={styles.input}
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry={true}
+        placeholderTextColor={styles.text.color}
       />
       <TextInput
-        style={{
-          borderWidth: 1,
-          borderColor: 'gray',
-          marginBottom: 20,
-          padding: 10,
-        }}
+        style={styles.input}
         placeholder="Confirm Password"
         value={confirmPassword}
         onChangeText={setConfirmPassword}
         secureTextEntry={true}
+        placeholderTextColor={styles.text.color}
       />
       <TouchableOpacity
         onPress={submitHandler}
-        style={{
-          backgroundColor: 'blue',
-          padding: 10,
-          alignItems: 'center',
-          borderRadius: 5,
-        }}
+        style={[styles.button, isLoading && styles.buttonDisabled]}
         disabled={isLoading}>
         {isLoading ? (
           <ActivityIndicator color="#fff" />
         ) : (
-          <Text style={{color: '#fff'}}>Sign Up</Text>
+          <Text style={styles.buttonText}>Sign Up</Text>
         )}
       </TouchableOpacity>
     </View>
