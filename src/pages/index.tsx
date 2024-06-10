@@ -96,7 +96,7 @@ export default function HomePage() {
           </Text>
         </View>
         <View>
-          {categories?.map((category) => (
+          {categories?.sort((a, b) => a.order - b.order).map((category) => (
             <TouchableOpacity
               key={category._id}
               onPress={() =>
