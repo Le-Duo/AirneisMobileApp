@@ -1,4 +1,4 @@
-package com.airneis.app
+package com.airneis.mobileapp
 
 import android.app.Application
 import android.content.res.Configuration

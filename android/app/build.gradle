@@ -83,9 +83,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.airneis.app'
+    namespace 'com.airneis.mobileapp'
     defaultConfig {
-        applicationId 'com.airneis.app'
+        applicationId 'com.airneis.mobileapp'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

@@ -1,4 +1,4 @@
-package com.airneis.app
+package com.airneis.mobileapp
 
 import android.os.Build
 import android.os.Bundle
